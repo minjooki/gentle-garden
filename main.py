@@ -18,29 +18,54 @@ def appStarted(app):
     app.plotSize = 50
     app.plotSpacing = 100
 
-    app.treeplot1 = (100,125,100+app.plotSize,125+app.plotSize)
+    # individual plots to plant trees in
+    app.treeplot1 = (100,175,100+app.plotSize,175+app.plotSize)
 
     app.treeplot2 = (app.treeplot1[2]+app.plotSpacing,150,
         app.treeplot1[2]+app.plotSpacing+app.plotSize,150+app.plotSize)
 
-    app.treeplot3 = (app.treeplot2[2]+app.plotSpacing,125,
-        app.treeplot2[2]+app.plotSpacing+app.plotSize,125+app.plotSize)
+    app.treeplot3 = (app.treeplot2[2]+app.plotSpacing,175,
+        app.treeplot2[2]+app.plotSpacing+app.plotSize,175+app.plotSize)
 
-    app.treeplot4 = (app.treeplot3[2]+app.plotSpacing,150,
-        app.treeplot3[2]+app.plotSpacing+app.plotSize,150+app.plotSize)
-    
-    app.treePlots1 = [app.treeplot1,app.treeplot2,app.treeplot3,app.treeplot4]
-    
-    
+    app.treeplot4 = (app.treeplot3[2]+app.plotSpacing,125,
+        app.treeplot3[2]+app.plotSpacing+app.plotSize,125+app.plotSize)
+
+    # 'container' of the lower tree plots
     app.treeSpace2 = (0,app.height-app.treePlotHeight,
                     app.treePlotWidth,app.height)
 
     app.pathWidth = 50
 
+    # non-tree plant plots
     app.plantPlotWidth = 600
     app.plantPlotHeight = 150
     app.plantPlot = (75,app.treeSpace1[3]+app.pathWidth,
       75+app.plantPlotWidth,app.treeSpace1[3]+app.pathWidth+app.plantPlotHeight)
+
+    app.treeplot5 = (100,app.plantPlot[3]+app.pathWidth+100,
+            100+app.plotSize,app.plantPlot[3]+app.pathWidth+100+app.plotSize)
+
+    app.treeplot6 = (app.treeplot5[2]+app.plotSpacing,
+                    app.plantPlot[3]+app.pathWidth+125,
+                    app.treeplot5[2]+app.plotSpacing+app.plotSize,
+                    app.plantPlot[3]+app.pathWidth+125+app.plotSize)
+
+    app.treeplot7 = (app.treeplot6[2]+app.plotSpacing,
+                    app.plantPlot[3]+app.pathWidth+75,
+                    app.treeplot6[2]+app.plotSpacing+app.plotSize,
+                    app.plantPlot[3]+app.pathWidth+75+app.plotSize)
+
+    app.treeplot8 = (app.treeplot7[2]+app.plotSpacing,
+                    app.plantPlot[3]+app.pathWidth+125,
+                    app.treeplot7[2]+app.plotSpacing+app.plotSize,
+                    app.plantPlot[3]+app.pathWidth+125+app.plotSize)
+    
+    # list of all the tree plots
+    app.allTreePlots = [app.treeplot1,app.treeplot2,app.treeplot3,app.treeplot4,
+                        app.treeplot5,app.treeplot6,app.treeplot7,app.treeplot8]
+    
+    app.sidePlot = (app.width-app.plantPlotHeight,65,app.width,
+                    65+app.plantPlotWidth)
 
     app.invItems = [
                     [{'apple': 0},{'peach':1},{'lemon':3},{'strawberry':2},
@@ -62,6 +87,8 @@ def getInvRowCol(app,event):
 
 def mousePressed(app,event):
     app.cx,app.cy = event.x,event.y
+
+    # open/close inventory
     if app.cx<=app.menuButtonWidth and app.cy<=app.menuButtonHeight:
         app.openInventory = True
     elif (app.cx<=825+app.closeInvHeight and app.cx>=825 and 
@@ -71,7 +98,6 @@ def mousePressed(app,event):
 def redrawAll(app,canvas):
     drawMenuHead(app,canvas)
     drawPlots(app,canvas)
-    # drawInventory(app,canvas)
 
     if app.openInventory==True:
         drawInventory(app,canvas)
@@ -131,16 +157,17 @@ def drawPlots(app,canvas):
     canvas.create_rectangle(app.treeSpace1[0],app.treeSpace1[1],
                             app.treeSpace1[2],app.treeSpace1[3],outline="grey")
 
-    for plot in app.treePlots1:
-        canvas.create_rectangle(plot[0],plot[1],plot[2],plot[3])
-
     canvas.create_rectangle(app.plantPlot[0],app.plantPlot[1],
                             app.plantPlot[2],app.plantPlot[3])
 
     canvas.create_rectangle(app.treeSpace2[0],app.treeSpace2[1],
                             app.treeSpace2[2],app.treeSpace2[3],outline="grey")
+
+    canvas.create_rectangle(app.sidePlot[0],app.sidePlot[1],
+                            app.sidePlot[2],app.sidePlot[3])
     
-    
+    for plot in app.allTreePlots:
+        canvas.create_rectangle(plot[0],plot[1],plot[2],plot[3])
 
 
 runApp(width=900,height=700)
