@@ -5,7 +5,6 @@ class PeachSeed:
     def __init__(self):
         self.growthStages = ['seed','germinating','small tree','medium tree',
             'mature tree','budding','flowering','unripe','fruits','no fruits']
-        self.growthStage
         self.growth = 0
         self.canHarvest = False
 
@@ -28,6 +27,8 @@ class PeachSeed:
         # 8 - 10+ is best growth
         self.overallStatus = 10
         self.isDead = self.isPeachDead(self)
+
+        self.numPeaches = None
 
     
     def waterPeach(self):
@@ -113,9 +114,13 @@ class PeachSeed:
         elif self.overallStatus <= 1:
             # do not advance
             pass
-        
+    
+    def growPeaches(self,num):
+        self.numPeaches = num
+    
+    def pickPeaches(self):
+        self.numPeaches -= 1
 
-                
 
 
 
