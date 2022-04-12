@@ -1,7 +1,12 @@
 from cmu_112_graphics import *
+from plant import *
 
 def appStarted(app):
     app.width,app.height = 900,700
+
+    app.charX,app.charY = 650,350
+    app.charHeight = 40
+    app.charWidth = 20
 
     app.openInventory = False
     app.closeInvHeight = 25
@@ -83,7 +88,33 @@ def appStarted(app):
 
 def getInvRowCol(app,event):
     pass
-    
+
+def isLegalMove(app,dx,dy):
+    tempX = app.charX + dx
+    tempY = app.charY + dy
+    if (tempX-(app.charWidth/2)<0 or tempX+(app.charWidth/2)>app.width or 
+        tempY-(app.charHeight/2)<0 or tempY+(app.charHeight/2)>app.height):
+        return False
+    return True
+
+def keyPressed(app,event):
+    dy,dx = 0,0
+    if event.key == 'Up':
+        dy = -10
+        if isLegalMove(app,dx,dy):
+            app.charY -= 10
+    elif event.key == 'Down':
+        dy = +10
+        if isLegalMove(app,dx,dy):
+            app.charY += 10
+    elif event.key == 'Right':
+        dx = +10
+        if isLegalMove(app,dx,dy):
+            app.charX += 10
+    elif event.key == 'Left':
+        dx = -10
+        if isLegalMove(app,dx,dy):
+            app.charX -= 10
 
 def mousePressed(app,event):
     app.cx,app.cy = event.x,event.y
@@ -96,12 +127,19 @@ def mousePressed(app,event):
         app.openInventory = False
 
 def redrawAll(app,canvas):
+    drawChar(app,canvas)
     drawMenuHead(app,canvas)
     drawPlots(app,canvas)
 
     if app.openInventory==True:
         drawInventory(app,canvas)
-    
+
+def drawChar(app,canvas):
+    x0 = app.charX - app.charWidth/2
+    y0 = app.charY - app.charHeight/2
+    x1 = app.charX + app.charWidth/2
+    y1 = app.charY + app.charHeight/2
+    canvas.create_rectangle(x0,y0,x1,y1,fill="yellow")
 
 
 def drawMenuHead(app,canvas):
