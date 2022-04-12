@@ -11,9 +11,30 @@ def appStarted(app):
     app.openInventory = False
     app.closeInvHeight = 25
 
+    app.invItems = [
+                    [{'apple': 0},{'peach':1},{'lemon':3},{'strawberry':2},
+                    {'orange':0},{'tomatoes':4}],
+
+                    [{'apple seed':8},{'peach seeds':4},{'lemon seeds':8},
+                    {'strawberry seeds':5},{'sample':0},{'sample':0}],
+
+                    [{'sample':1},{'sample':1},{'sample':1},{'sample':1},
+                    {'sample':1},{'sample':1}],
+
+                    [{'sample':1},{'sample':1},{'sample':1},{'sample':1},
+                    {'sample':1},{'sample':1}],
+                    ]
+
     app.menuButtonHeight = 50
     app.menuButtonWidth = 100
 
+    app.openPlanting = False
+    app.closePlantingHeight = 25
+    app.plantingSlot = 75
+
+
+
+    # GARDEN PLANTING GRAPHICS
     app.treePlotWidth = 700
     app.treePlotHeight = 200
 
@@ -72,19 +93,7 @@ def appStarted(app):
     app.sidePlot = (app.width-app.plantPlotHeight,65,app.width,
                     65+app.plantPlotWidth)
 
-    app.invItems = [
-                    [{'apple': 0},{'peach':1},{'lemon':3},{'strawberry':2},
-                    {'orange':0},{'tomatoes':4}],
 
-                    [{'apple seed':8},{'peach seeds':4},{'lemon seeds':8},
-                    {'strawberry seeds':5},{'sample':0},{'sample':0}],
-
-                    [{'sample':1},{'sample':1},{'sample':1},{'sample':1},
-                    {'sample':1},{'sample':1}],
-
-                    [{'sample':1},{'sample':1},{'sample':1},{'sample':1},
-                    {'sample':1},{'sample':1}],
-                    ]
 
 def getInvRowCol(app,event):
     pass
@@ -122,9 +131,19 @@ def mousePressed(app,event):
     # open/close inventory
     if app.cx<=app.menuButtonWidth and app.cy<=app.menuButtonHeight:
         app.openInventory = True
+        app.openPlanting = False
     elif (app.cx<=825+app.closeInvHeight and app.cx>=825 and 
                 app.cy<=50+app.closeInvHeight and app.cy>=50):
         app.openInventory = False
+    
+    #open/close planting
+    if (app.cx<=app.menuButtonWidth*2 and app.cx>app.menuButtonWidth and 
+                                            app.cy<=app.menuButtonHeight):
+        app.openPlanting = True
+        app.openInventory = False
+    elif (app.cx<=825+app.closePlantingHeight and app.cx>=825 and  
+                    app.cy<=225 and app.cy>=200):
+        app.openPlanting = False
 
 def redrawAll(app,canvas):
     drawChar(app,canvas)
@@ -133,6 +152,8 @@ def redrawAll(app,canvas):
 
     if app.openInventory==True:
         drawInventory(app,canvas)
+    elif app.openPlanting==True:
+        drawPlanting(app,canvas)
 
 def drawChar(app,canvas):
     x0 = app.charX - app.charWidth/2
@@ -206,6 +227,23 @@ def drawPlots(app,canvas):
     
     for plot in app.allTreePlots:
         canvas.create_rectangle(plot[0],plot[1],plot[2],plot[3])
+
+def drawPlanting(app,canvas):
+    marginTop = 200
+    marginSide = 50
+    sideSpace = (app.width-(2*marginSide))/4
+    topSpace = (app.height-(2*marginTop))/3
+    canvas.create_rectangle(marginSide,marginTop,
+                        app.width-marginSide,app.height-marginTop,fill="white")
+    canvas.create_text(850-app.closePlantingHeight/2,
+                    200+app.closePlantingHeight/2,text="X")
+    
+    for j in range(1,3):
+        for i in range(1,4):
+            colX0 = marginSide + app.plantingSlot*i + sideSpace*(i-1)
+            colY0 = marginTop + app.plantingSlot*(j-1) + topSpace*(j)
+            canvas.create_rectangle(colX0,colY0,colX0+app.plantingSlot,
+                colY0+app.plantingSlot)
 
 
 runApp(width=900,height=700)
