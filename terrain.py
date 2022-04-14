@@ -3,11 +3,8 @@ import random
 # procedural terrain generation code based off of Kate Weeden:
 # https://medium.com/inspired-to-program-%E3%85%82-%D9%88-%CC%91%CC%91/procedural-generation-in-python-7b75127b2f74 
 
-# start with initial game start (level 1?), which is 900 x 700 board
-# every "block" is 50 pixels
-
-def generateNoise(width,height):
-    plotSize = 50
+def generateTerrain(width,height):
+    plotSize = 10
     rows = height//plotSize
     cols = width//plotSize
     noiseMap = [ [0]*cols for row in range(rows) ]
@@ -51,8 +48,6 @@ def generateNoise(width,height):
     firstMid = minVal + interval
     secondMid = firstMid + interval
 
-    print(minVal,firstMid,secondMid,maxVal)
-
     # check which is the closest division point
     for row in range(len(noiseMap)):
         newRow = []
@@ -65,7 +60,59 @@ def generateNoise(width,height):
             else:
                 newRow.append(3)
         normalized.append(newRow)
-
     return normalized
 
-print(generateNoise(900,700))
+# voronoi with grid row/col values idea from 
+# https://www.cs.cmu.edu/~112/notes/student-tp-guides/Terrain.pdf 
+def distance(x0,y0,x1,y1):
+    return ((y1-y0)**2 + (x1-x0)**2)**0.5
+
+
+def voronoiSeeds(width,height):
+    # places voronoi seeds in random locations
+    num = random.randint(4,6)
+    numPoints = list(range(num))
+    pointCoords = []
+    for point in numPoints:
+        while True:
+            x = random.randint(0,width)
+            y = random.randint(0,height)
+            if (x,y) not in pointCoords:
+                break
+        pointCoords.append((x,y))
+    return pointCoords
+
+
+def getClosestSeeds(L,width,height):
+    # returns dictionary of each seed point mapped to list of closest cells
+    cellSize = 25
+    rows = height//cellSize
+    cols = width//cellSize
+    voronoi = {}
+
+    for row in range(rows):
+        for col in range(cols):
+            midX = col*cellSize + cellSize/2
+            midY = row*cellSize + cellSize/2
+            seed = getClosest(L,midX,midY)
+
+            if seed not in voronoi:
+                voronoi[seed] = []
+            voronoi[seed].append((row,col))
+    return voronoi
+
+
+def getClosest(L,x,y):
+    # gets closest seed from the current cell midpoint
+    closestPoint = None
+    closestDistance = None
+    for seed in L:
+        if closestDistance==None:
+            closestDistance = distance(seed[0],seed[1],x,y)
+        x0 = seed[0]
+        y0 = seed[1]
+        dist = distance(x0,y0,x,y)
+        if dist <= closestDistance:
+            closestDistance = dist
+            closestPoint = seed
+    return closestPoint
