@@ -1,6 +1,7 @@
 from cmu_112_graphics import *
 from plant import *
 from terrain import *
+from helper import *
 
 def appStarted(app):
     app.width,app.height = 900,700
@@ -28,10 +29,34 @@ def appStarted(app):
     app.openPlanting = False
     app.closePlantingHeight = 25
     app.plantingSlot = 75
+    app.plantingMarginTop = 200
+    app.plantingMarginSide = 50
+    app.goPlantX0,app.goPlantX1,app.goPlantY0,app.goPlantY1 = (50,75,200,225)
+    app.plantingX0,app.plantingX1,app.plantingY0,app.plantingY1 = (50,850,
+                                                                    200,500)
+    app.seedInv = [[{'apple seed':0},{'peach seed':0},{'lemon seed':0}],
+                [{'strawberry seed':0},{'tomato seed':0},{'blackberry seed':0}]]
+    
+    app.appleSeeds = 5
+    app.apples = 0
+    app.peachSeeds = 5
+    app.peaches = 0
+    app.lemonSeeds = 5
+    app.lemons = 0
+    app.strawbSeeds = 5
+    app.strawberries = 0
+    app.tomatoSeeds = 5
+    app.tomatoes = 0
+    app.blackbSeeds = 5
+    app.blackberries = 0
+
+    app.isPlanting = False
+    app.startSeed = False
+    app.currSeed = 'apple' #CHANGE, temp demo only
 
     # dictionary mapping level to generated terrain
     app.terrain = makeTerrain(app)
-    app.cellSize = 25
+    app.cellSize = 10
     
 
 def makeTerrain(app):
@@ -87,6 +112,20 @@ def mousePressed(app,event):
     elif (app.cx<=825+app.closePlantingHeight and app.cx>=825 and  
                     app.cy<=225 and app.cy>=200):
         app.openPlanting = False
+    
+    # plant demo seed
+    if (app.openPlanting and app.cx>app.goPlantX0 and app.cx<app.goPlantX1 and 
+                            app.cy>app.goPlantY0 and app.cy<app.goPlantY1):
+        app.isPlanting = True
+        app.openPlanting = False
+    if (app.isPlanting and app.cx>400 and app.cx<450 and 
+                                app.cy>400 and app.cy<450):
+        app.startSeed = True
+
+def isStartSeed(app):
+    if app.startSeed==True:
+        newSeed = Plant(app.currSeed)
+
 
 def redrawAll(app,canvas):
     drawTerrain(app,canvas)
@@ -98,28 +137,39 @@ def redrawAll(app,canvas):
         drawInventory(app,canvas)
     elif app.openPlanting==True:
         drawPlanting(app,canvas)
+    
+    # demo tree plot
+    canvas.create_rectangle(400,400,450,450,fill="white")
+    
 
 def drawTerrain(app,canvas):
     # pairs voronoi point to a color
-    colors = ['red','blue','green','yellow','purple','pink','orange']
+    terrains = [0,1,2,3,4]
     colorPairs = []
     i = 0
     for seed in app.terrain:
-        color = colors[i]
+        terrainType = terrains[i]
         i += 1
-        colorPairs.append((seed,color))
+        colorPairs.append((seed,terrainType))
     
     for seedPair in colorPairs:
-        color = seedPair[1]
+        terrainType = seedPair[1]
         seed = seedPair[0]
+        color = getTerrainColor(app,terrainType)
         for (row,col) in app.terrain[seed]:
             x0 = col*app.cellSize
             y0 = row*app.cellSize + app.menuButtonHeight
             x1 = x0 + app.cellSize
             y1 = y0 + app.cellSize + app.menuButtonHeight
-            canvas.create_rectangle(x0,y0,x1,y1,fill=color)
+            canvas.create_rectangle(x0,y0,x1,y1,fill=color,outline='')
 
-
+def getTerrainColor(app,terrainNum):
+    if terrainNum==0:
+        return rgbString(126,200,80)
+    elif terrainNum==1 or terrainNum==3:
+        return rgbString(155,103,60)
+    else:
+        return rgbString(131,105,83)
 
 
 
@@ -132,8 +182,6 @@ def drawTerrain(app,canvas):
 
 
 def drawMenuHead(app,canvas):
-    buttonWidth = 100
-    buttonHeight = 40
     menuItems = ["Inventory","Plant","Water","Harvest"]
     for i in range(4):
         x0 = i*100
@@ -144,18 +192,28 @@ def drawMenuHead(app,canvas):
         canvas.create_text(x0+app.menuButtonWidth/2,y1/2,text=menuItems[i])
     
     timeX0 = 700
-    timeX1 = timeX0 + buttonWidth
+    timeX1 = timeX0 + app.menuButtonWidth
     timeY0 = 0
-    timeY1 = timeY0 + buttonHeight
+    timeY1 = timeY0 + app.menuButtonHeight
     canvas.create_rectangle(timeX0,timeY0,timeX1,timeY1)
-    canvas.create_text(timeX0+buttonWidth/2,timeY1/2,text="12:00 PM")
+    canvas.create_text(timeX0+app.menuButtonWidth/2,
+                            timeY1/2,text="12:00 PM")
 
     tempX0 = 800
-    tempX1 = tempX0 + buttonWidth
+    tempX1 = tempX0 + app.menuButtonWidth
     tempY0 = 0
-    tempY1 = tempY0 + buttonHeight
+    tempY1 = tempY0 + app.menuButtonHeight
     canvas.create_rectangle(tempX0,tempY0,tempX1,tempY1)
-    canvas.create_text(tempX0+buttonWidth/2,tempY1/2,text="temp #")
+    canvas.create_text(tempX0+app.menuButtonWidth/2,tempY1/2,text="temp #")
+
+def updateSeedInv(app):
+    app.seedInv['apple seed'] = app.appleSeeds
+    app.seedInv['peach seed'] = app.peachSeeds
+    app.seedInv['lemon seed'] = app.lemonSeeds
+    app.seedInv['strawberry seed'] = app.strawbSeeds
+    app.seedInv['tomato seed'] = app.tomatoSeeds
+    app.seedInv['blackberry seed'] = app.blackbSeeds
+
 
 def drawInventory(app,canvas):
     invMargin = 50
@@ -181,21 +239,25 @@ def drawInventory(app,canvas):
                             text='X')
 
 def drawPlanting(app,canvas):
-    marginTop = 200
-    marginSide = 50
-    sideSpace = (app.width-(2*marginSide))/4
-    topSpace = (app.height-(2*marginTop))/3
-    canvas.create_rectangle(marginSide,marginTop,
-                        app.width-marginSide,app.height-marginTop,fill="white")
-    canvas.create_text(850-app.closePlantingHeight/2,
-                    200+app.closePlantingHeight/2,text="X")
+    sideSpace = ((app.plantingX1-app.plantingX0) - (app.plantingSlot*3))/4
+    topSpace = ((app.plantingY1-app.plantingY0) - (app.plantingSlot*2))/3
+    canvas.create_rectangle(app.plantingX0,app.plantingY0,
+                            app.plantingX1,app.plantingY1,fill="white")
+    canvas.create_text(app.plantingX1-app.closePlantingHeight/2,
+                    app.plantingY0+app.closePlantingHeight/2,text="X")
     
-    for j in range(1,3):
-        for i in range(1,4):
-            colX0 = marginSide + app.plantingSlot*i + sideSpace*(i-1)
-            colY0 = marginTop + app.plantingSlot*(j-1) + topSpace*(j)
+    for j in range(2):
+        for i in range(3):
+            colX0 = (app.plantingX0 + app.plantingSlot*i + sideSpace*(i+1))
+            colY0 = (app.plantingY0 + app.plantingSlot*j + topSpace*(j+1))
             canvas.create_rectangle(colX0,colY0,colX0+app.plantingSlot,
                 colY0+app.plantingSlot)
+            
+            inv = app.seedInv[j][i]
+            for seedName in inv:
+                seedNum = inv[seedName]
+            canvas.create_text(colX0+app.plantingSlot/2,
+                colY0+app.plantingSlot/2,text=seedName+' '+str(seedNum))
 
 
 runApp(width=900,height=700)

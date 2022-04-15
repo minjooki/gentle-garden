@@ -70,8 +70,7 @@ def distance(x0,y0,x1,y1):
 
 def voronoiSeeds(width,height):
     # places voronoi seeds in random locations
-    num = random.randint(4,6)
-    numPoints = list(range(num))
+    numPoints = list(range(5))
     pointCoords = []
     for point in numPoints:
         while True:
@@ -85,7 +84,7 @@ def voronoiSeeds(width,height):
 
 def getClosestSeeds(L,width,height):
     # returns dictionary of each seed point mapped to list of closest cells
-    cellSize = 25
+    cellSize = 10
     rows = height//cellSize
     cols = width//cellSize
     voronoi = {}
