@@ -62,8 +62,6 @@ def appStarted(app):
     app.plantingSide = ((app.plantingX1-app.plantingX0)-(app.plantingSlot*3))/4
     app.plantingTop = ((app.plantingY1-app.plantingY0)-(app.plantingSlot*2))/3
 
-    app.goPlantX0,app.goPlantY0 = (750,450)
-    app.goPlantWidth,app.goPlantHeight = (100,50)
 
     app.seedInv = [[{'apple seed':0},{'peach seed':0},{'lemon seed':0}],
                 [{'strawberry seed':0},{'tomato seed':0},{'blackberry seed':0}]]
@@ -159,6 +157,11 @@ def keyPressed(app,event):
         dx = -10
         if isLegalMove(app,dx,dy):
             app.charX -= 10
+    # use enter key to pick seed and start planting
+    if app.openPlanting and app.currSeed!=None and event.key=='Enter':
+        app.openPlanting = False
+        app.isPlanting = True
+
 
 def mousePressed(app,event):
     app.cx,app.cy = event.x,event.y
@@ -206,38 +209,52 @@ def mousePressed(app,event):
         elif clickedOn(app.cx,app.cy,app.blackbSeedInvX0,app.blackbSeedInvY0,
             app.plantingSlot,app.plantingSlot):
             app.currSeed = 'blackberry'
-
     
-    if (app.openPlanting) and (clickedOn(app.cx,app.cy,app.goPlantX0,
-        app.goPlantY0,app.goPlantWidth,app.goPlantHeight)) and \
-        (app.currSeed != None):
-        app.isPlanting = True
-        app.openPlanting = False
-    
-    if app.isPlanting:
+    if app.isPlanting and app.openPlanting==False:
         (row,col) = getBoardRowCol(app,app.cx,app.cy)
 
         # if tree and in the right terrain
         if (app.currSeed in ['apple','lemon','peach'] and (app.board[row][col]==1
                  or app.board[row][col]==3)):
             print('correct TREE')
-            app.board[row][col]= 5
+            if isLegalPlant(app,row,col,5,1,3):
+                print('pass')
+                plantOnBoard(app,row,col,5)
+                app.isPlanting = False
         elif (app.currSeed in ['strawberry','blackberry','tomato'] and 
                 (app.board[row][col]==2 or app.board[row][col]==4)):
-            print('correct PLANT')
-            app.board[row][col] = 6
-        print(row,col)
-    
+            if isLegalPlant(app,row,col,6,2,4):
+                plantOnBoard(app,row,col,6)
+                app.isPlanting = False
+
+def plantOnBoard(app,row,col,plantType):
+    for drow in (-2,-1,0,+1,+2):
+        for dcol in (-2,-1,0,+1,+2):
+            newRow = row + drow
+            newCol = col + dcol
+            app.board[newRow][newCol] = plantType
+
+def isLegalPlant(app,row,col,plantType,terrainType1,terrainType2):
+    # plots cannot overlap and must be at least 2 rows apart
+    for drow in (-4,-3,-2,-1,0,+1,+2,+3,+4):
+        for dcol in (-4,-3,-2,-1,0,+1,+2,+3,+4):
+            newRow = row + drow
+            newCol = col + dcol
+            if (newRow<2 or newCol<2 or newRow>(app.rows-3) or 
+                                            newCol>(app.cols-3)):
+                return False
+            elif ((app.board[newRow][newCol]==plantType or 
+                (app.board[newRow][newCol]!=terrainType1 and 
+                app.board[newRow][newCol]!=terrainType2))):
+                return False
+
+    return True
+
 
 def getBoardRowCol(app,x,y):
     row = int((y - app.menuButtonHeight) / app.cellSize)
     col = int(x / app.cellSize)
     return (row,col)
-
-def isPlantingLegal(app,row,col):
-    # need to plant within 3 from the edge
-    if row > 2 or row < app.rows-3 or col > 2 or col < app.cols-3:
-        pass
 
 
 def isStartSeed(app):
@@ -438,6 +455,9 @@ def drawInventory(app,canvas):
                             text='X')
 
 def drawPlanting(app,canvas):
+    canvas.create_text(app.plantingX0+(app.plantingX1-app.plantingX0)/2,
+        app.plantingY0+(app.plantingY1-app.plantingY0)/2,
+        text='select seed to plant and press enter to start planting!')
     
     canvas.create_rectangle(app.plantingX0,app.plantingY0,
                             app.plantingX1,app.plantingY1,fill="white")
@@ -456,10 +476,5 @@ def drawPlanting(app,canvas):
                 seedNum = inv[seedName]
             canvas.create_text(colX0+app.plantingSlot/2,
                 colY0+app.plantingSlot/2,text=seedName+' '+str(seedNum))
-    # button to start plant seed
-    canvas.create_rectangle(app.goPlantX0,app.goPlantY0,
-        app.goPlantX0+app.goPlantWidth,app.goPlantY0+app.goPlantHeight)
-    canvas.create_text(app.goPlantX0+app.goPlantWidth/2,
-        app.goPlantY0+app.goPlantHeight/2,text='plant!')
 
 runApp(width=900,height=700)
