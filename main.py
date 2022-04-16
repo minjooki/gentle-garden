@@ -20,24 +20,27 @@ def appStarted(app):
     app.closeInvY0 = 50
 
     app.invItems = [
-                    [{'apple': 0},{'peach':1},{'lemon':3},{'strawberry':2},
-                    {'orange':0},{'tomatoes':4}],
+                    [ ['apple', 0],['peach',1],['lemon',3],['strawberry',2],
+                    ['orange',0],['tomatoes',4] ],
 
-                    [{'apple seed':8},{'peach seeds':4},{'lemon seeds':8},
-                    {'strawberry seeds':5},{'sample':0},{'sample':0}],
+                    [ ['apple seed',8],['peach seeds',4],['lemon seeds',8],
+                    ['strawberry seeds',5],['sample',0],['sample',0] ],
 
-                    [{'sample':1},{'sample':1},{'sample':1},{'sample':1},
-                    {'sample':1},{'sample':1}],
+                    [ ['sample',1],['sample',1],['sample',1],['sample',1],
+                    ['sample',1],['sample',1] ],
 
-                    [{'sample':1},{'sample':1},{'sample':1},{'sample':1},
-                    {'sample':1},{'sample':1}],
+                    [ ['sample',1],['sample',1],['sample',1],['sample',1],
+                    ['sample',1],['sample',1] ] 
                     ]
+                    
     
     app.exitHeight = 50
     app.exitWidth = 50
     app.exitSaveX0,app.exitSaveY0 = (350,325)
     app.exitSaveWidth,app.exitSaveHeight = (200,75)
     app.exitCloseX0,app.exitCloseY0 = (350,450)
+    app.exitCancelX0,app.exitCancelY0 = (400,575)
+    app.exitCancelWidth,app.exitCancelHeight = (100,30)
 
     app.menuButtonHeight = 50
     app.menuButtonWidth = 100
@@ -58,14 +61,25 @@ def appStarted(app):
     app.plantingMarginSide = 50
     app.plantingX0,app.plantingX1,app.plantingY0,app.plantingY1 = (50,850,
                                                                     200,500)
+    app.unplantX0,app.unplantY0 = (750,475)
+    app.unplantWidth = 100
+    app.unplantHeight = 25
+    app.removingPlants = False
+
+    app.stopRemoveX0,app.stopRemoveY0 = (500,10)
+    app.stopRemoveWidth = 90
+    app.stopRemoveHeight = 30
 
     app.plantingSide = ((app.plantingX1-app.plantingX0)-(app.plantingSlot*3))/4
     app.plantingTop = ((app.plantingY1-app.plantingY0)-(app.plantingSlot*2))/3
 
 
-    app.seedInv = [[{'apple seed':0},{'peach seed':0},{'lemon seed':0}],
-                [{'strawberry seed':0},{'tomato seed':0},{'blackberry seed':0}]]
+    app.seedInv = [ [['apple seed',0],['peach seed',0],['lemon seed',0]],
+                [['strawberry seed',0],['tomato seed',0],['blackberry seed',0]] ]
     
+    app.treePoints = {'apple':[],'peach':[],'lemon':[]}
+    app.plantPoints = {'strawb':[],'blackb':[],'tomato':[]}
+
     app.appleSeeds = 5
     app.apples = 0
     app.appleSeedInvX0 = (app.plantingX0+app.plantingSide)
@@ -106,6 +120,7 @@ def appStarted(app):
     app.rows,app.cols = (app.height//app.cellSize,app.width//app.cellSize)
     app.board = [[0]*app.cols for row in range(app.rows)]
     updateBoard(app)
+    updateSeedInv(app)
 
 def makeTerrain(app):
     # makes terrain to app.terrain
@@ -132,6 +147,7 @@ def updateBoard(app):
   
 
 def isLegalMove(app,dx,dy):
+    # is moving character legal
     tempX = app.charX + dx
     tempY = app.charY + dy
     if (tempX-(app.charWidth/2)<0 or tempX+(app.charWidth/2)>app.width or 
@@ -157,6 +173,7 @@ def keyPressed(app,event):
         dx = -10
         if isLegalMove(app,dx,dy):
             app.charX -= 10
+
     # use enter key to pick seed and start planting
     if app.openPlanting and app.currSeed!=None and event.key=='Enter':
         app.openPlanting = False
@@ -171,7 +188,8 @@ def mousePressed(app,event):
         app.mode = 'exitMode'
 
     # open/close inventory
-    elif clickedOn(app.cx,app.cy,0,0,app.menuButtonWidth,app.menuButtonHeight):
+    elif clickedOn(app.cx,app.cy,50,0,50+app.menuButtonWidth,
+        app.menuButtonHeight):
         app.openInventory = True
         app.openPlanting = False
         app.isPlanting = False
@@ -190,54 +208,163 @@ def mousePressed(app,event):
         app.openPlanting = False
     
     if (app.openPlanting):
-        # pick the seed to plant
+        # pick the seed to plant only if there are seeds
         if clickedOn(app.cx,app.cy,app.appleSeedInvX0,app.appleSeedInvY0,
             app.plantingSlot,app.plantingSlot):
             app.currSeed = 'apple'
+            if app.appleSeeds < 1:
+                app.currSeed = None
         elif clickedOn(app.cx,app.cy,app.peachSeedInvX0,app.peachSeedInvY0,
             app.plantingSlot,app.plantingSlot):
             app.currSeed = 'peach'
+            if app.peachSeeds < 1:
+                app.currSeed = None
         elif clickedOn(app.cx,app.cy,app.lemonSeedInvX0,app.lemonSeedInvY0,
             app.plantingSlot,app.plantingSlot):
             app.currSeed = 'lemon'
+            if app.lemonSeeds < 1:
+                app.currSeed = None
         elif clickedOn(app.cx,app.cy,app.strawbSeedInvX0,app.strawbSeedInvY0,
             app.plantingSlot,app.plantingSlot):
-            app.currSeed = 'strawberry'
+            app.currSeed = 'strawb'
+            if app.strawbSeeds < 1:
+                app.currSeed = None
         elif clickedOn(app.cx,app.cy,app.tomatoSeedInvX0,app.tomatoSeedInvY0,
             app.plantingSlot,app.plantingSlot):
             app.currSeed = 'tomato'
+            if app.tomatoSeeds < 1:
+                app.currSeed = None
         elif clickedOn(app.cx,app.cy,app.blackbSeedInvX0,app.blackbSeedInvY0,
             app.plantingSlot,app.plantingSlot):
-            app.currSeed = 'blackberry'
+            app.currSeed = 'blackb'
+            if app.blackbSeeds < 1:
+                app.currSeed = None
+        
+        # start removing plants
+        if clickedOn(app.cx,app.cy,app.unplantX0,app.unplantY0,
+            app.unplantWidth,app.unplantHeight):
+            app.removingPlants = True
+            app.openPlanting = False
     
     if app.isPlanting and app.openPlanting==False:
+        # planting seed 
         (row,col) = getBoardRowCol(app,app.cx,app.cy)
 
         # if tree and in the right terrain
         if (app.currSeed in ['apple','lemon','peach'] and (app.board[row][col]==1
                  or app.board[row][col]==3)):
-            print('correct TREE')
-            if isLegalPlant(app,row,col,5,1,3):
-                print('pass')
-                plantOnBoard(app,row,col,5)
+            if isLegalTree(app,row,col,5,1,3):
+                treeOnBoard(app,row,col,5)
+                app.treePoints[app.currSeed].append((row,col))
                 app.isPlanting = False
-        elif (app.currSeed in ['strawberry','blackberry','tomato'] and 
+
+        elif (app.currSeed in ['strawb','blackb','tomato'] and 
                 (app.board[row][col]==2 or app.board[row][col]==4)):
             if isLegalPlant(app,row,col,6,2,4):
                 plantOnBoard(app,row,col,6)
+                app.plantPoints[app.currSeed].append((row,col))
                 app.isPlanting = False
+        if app.isPlanting==False:
+            updateSeeds(app)
 
-def plantOnBoard(app,row,col,plantType):
+    if app.openPlanting==False and app.removingPlants:
+        # remove plants
+        (row,col) = getBoardRowCol(app,app.cx,app.cy)
+
+        if app.board[row][col] in (50,51,52,53,54,55,56):
+            removeTree(app,row,col)
+        elif app.board[row][col] in (30,31,32,33,34,35,36):
+            removePlant(app,row,col)
+        elif clickedOn(app.cx,app.cy,app.stopRemoveX0,app.stopRemoveY0,
+            app.stopRemoveWidth,app.stopRemoveHeight):
+            app.removingPlants = False
+
+def removeTree(app,row,col):
+    for drow in range(-5,1):
+        for dcol in range(-2,4):
+            newRow = row + drow
+            newCol = col + dcol
+            app.board[newRow][newCol] = 1
+    for treeType in app.treePoints:
+        if (row,col) in app.treePoints[treeType]:
+            app.treePoints[treeType].remove((row,col))
+
+def removePlant(app,row,col):
+    for drow in range(-2,1):
+        for dcol in range(-1,3):
+            newRow = row + drow
+            newCol = col + dcol
+            app.board[newRow][newCol] = 2
+
+
+def updateSeedInv(app):
+    # update seed inventory for display
+    app.seedInv[0][0][1]= app.appleSeeds
+    app.seedInv[0][1][1] = app.peachSeeds
+    app.seedInv[0][2][1] = app.lemonSeeds
+    app.seedInv[1][0][1] = app.strawbSeeds
+    app.seedInv[1][1][1] = app.tomatoSeeds
+    app.seedInv[1][2][1] = app.blackbSeeds
+
+def updateSeeds(app):
+    # update seed inventory
+    if app.currSeed=='apple':
+        app.appleSeeds -= 1
+    elif app.currSeed =='peach':
+        app.peachSeeds -= 1
+    elif app.currSeed == 'lemon':
+        app.lemonSeeds -= 1
+    elif app.currSeed == 'strawb':
+        app.strawbSeeds -= 1
+    elif app.currSeed == 'tomato':
+        app.tomatoSeeds -= 1
+    elif app.currSeed == 'blackb':
+        app.blackbSeeds -= 1
+    app.currSeed = None
+    updateSeedInv(app)
+
+def treeOnBoard(app,row,col,plantType):
+    # update board and plant tree
     for drow in (-2,-1,0,+1,+2):
         for dcol in (-2,-1,0,+1,+2):
             newRow = row + drow
             newCol = col + dcol
-            app.board[newRow][newCol] = plantType
+            if ((drow == +2) and (dcol==0)):
+                app.board[newRow][newCol] = 50
+            else:
+                app.board[newRow][newCol] = plantType
+
+def plantOnBoard(app,row,col,plantType):
+    # update board and plant plant
+    for drow in (-1,0,+1):
+        for dcol in (-1,0,+1):
+            newRow = row + drow
+            newCol = col + dcol
+            if ((drow == +1) and (dcol==0)):
+                app.board[newRow][newCol] = 30
+            else:
+                app.board[newRow][newCol] = plantType
+
+def isLegalTree(app,row,col,plantType,terrainType1,terrainType2):
+    # plots cannot overlap and must be spaced out
+    for drow in (list(range(-8,8))):
+        for dcol in (list(range(-5,5))):
+            newRow = row + drow
+            newCol = col + dcol
+            if (newRow<2 or newCol<2 or newRow>(app.rows-3) or 
+                                            newCol>(app.cols-3)):
+                return False
+            elif ((app.board[newRow][newCol]==plantType or 
+                (app.board[newRow][newCol]!=terrainType1 and 
+                app.board[newRow][newCol]!=terrainType2))):
+                return False
+
+    return True
 
 def isLegalPlant(app,row,col,plantType,terrainType1,terrainType2):
-    # plots cannot overlap and must be at least 2 rows apart
-    for drow in (-4,-3,-2,-1,0,+1,+2,+3,+4):
-        for dcol in (-4,-3,-2,-1,0,+1,+2,+3,+4):
+    # plots cannot overlap and must be spaced out
+    for drow in (list(range(-6,6))):
+        for dcol in (list(range(-4,4))):
             newRow = row + drow
             newCol = col + dcol
             if (newRow<2 or newCol<2 or newRow>(app.rows-3) or 
@@ -328,6 +455,10 @@ def exitMode_redrawAll(app,canvas):
     canvas.create_text(app.exitCloseX0+app.exitSaveWidth/2,
         app.exitCloseY0+app.exitSaveHeight/2,
         text='exit without saving',font='Courier 14')
+    
+    canvas.create_text(app.exitCancelX0+app.exitCancelWidth/2,
+        app.exitCancelY0+app.exitCancelHeight/2,
+        text='cancel',font='Courier 12',fill='white')
 
 def exitMode_mousePressed(app,event):
     app.cx,app.cy = (event.x,event.y)
@@ -340,6 +471,9 @@ def exitMode_mousePressed(app,event):
     elif clickedOn(app.cx,app.cy,app.exitSaveY0,app.exitSaveY0,
         app.exitSaveWidth,app.exitSaveHeight):
         pass
+    elif clickedOn(app.cx,app.cy,app.exitCancelX0,app.exitCancelY0,
+        app.exitCancelWidth,app.exitCancelHeight):
+        app.mode = None
 
 
 ###################
@@ -354,7 +488,16 @@ def redrawAll(app,canvas):
         drawInventory(app,canvas)
     elif app.openPlanting:
         drawPlanting(app,canvas)
+    
+    if app.removingPlants:
+        drawStopRemove(app,canvas)
 
+def drawStopRemove(app,canvas):
+    canvas.create_rectangle(app.stopRemoveX0,app.stopRemoveY0,
+        app.stopRemoveX0+app.stopRemoveWidth,  
+        app.stopRemoveY0+app.stopRemoveHeight)
+    canvas.create_text(app.stopRemoveX0+app.stopRemoveWidth/2,
+        app.stopRemoveY0+app.stopRemoveHeight/2,text='finish')
 
 
 def drawTerrain(app,canvas):
@@ -378,13 +521,56 @@ def getTerrainColor(app,terrainNum):
     # OTHER PLANT
     elif terrainNum==2 or terrainNum==4:
         return rgbString(131,105,83)
-    # TEMP planted tree
+    
+    # TEMP planted tree seed
     elif terrainNum==5:
         return rgbString(0,128,0)
-    # TEMP planted plant
+    elif terrainNum==50:
+        # TEMP color to rep stages -- sprout, green
+        return rgbString(50,205,50)
+    elif terrainNum==51:
+        # small tree -- purple
+        return rgbString(123,104,238)
+    elif terrainNum==52:
+        # medium tree -- red
+        return rgbString(255,0,0)
+    elif terrainNum==53:
+        # mature tree -- lime
+        return rgbString(173,255,47)
+    elif terrainNum==54:
+        # blooming -- pink
+        return rgbString(255,105,180)
+    elif terrainNum==55:
+        # unripe -- orange
+        return rgbString(255,140,0)
+    elif terrainNum==56:
+        # fruits -- gray
+        return rgbString(105,105,105)
+
+    # TEMP planted plant seed
     elif terrainNum==6:
         return rgbString(0,255,127)
-
+    elif terrainNum==30:
+        # TEMP color to rep -- sprout, yellow
+        return rgbString(255,255,0)
+    elif terrainNum==31:
+        # small plant -- blue
+        return rgbString(135,206,250)
+    elif terrainNum==32:
+        # medium plant -- light green
+        return rgbString(143,188,143)
+    elif terrainNum==33:
+        # mature plant -- purple
+        return rgbString(148,0,211)
+    elif terrainNum==34:
+        # flowers -- magenta
+        return rgbString(255,0,255)
+    elif terrainNum==35:
+        # unripe -- brown
+        return rgbString(139,69,19)
+    elif terrainNum==36:
+        # fruit -- teal
+        return rgbString(32,178,170)
 
 
 # def drawChar(app,canvas):
@@ -422,14 +608,6 @@ def drawMenuHead(app,canvas):
     canvas.create_rectangle(tempX0,tempY0,tempX1,tempY1)
     canvas.create_text(tempX0+app.menuButtonWidth/2,tempY1/2,text="temp #")
 
-def updateSeedInv(app):
-    app.seedInv['apple seed'] = app.appleSeeds
-    app.seedInv['peach seed'] = app.peachSeeds
-    app.seedInv['lemon seed'] = app.lemonSeeds
-    app.seedInv['strawberry seed'] = app.strawbSeeds
-    app.seedInv['tomato seed'] = app.tomatoSeeds
-    app.seedInv['blackberry seed'] = app.blackbSeeds
-
 
 def drawInventory(app,canvas):
     invMargin = 50
@@ -446,10 +624,10 @@ def drawInventory(app,canvas):
             canvas.create_rectangle(colX0,colY0,
                             colX0+colWidth,colY0+colWidth)
 
-            for item in app.invItems[i][j]:
-                itemCount = app.invItems[i][j][item]
-                canvas.create_text(colX0+colWidth/2,colY0+colWidth/2,
-                                    text=item+" "+str(itemCount))
+            item = app.invItems[i][j][0]
+            count = app.invItems[i][j][1]
+            canvas.create_text(colX0+colWidth/2,colY0+colWidth/2,
+                                    text=item+" "+str(count))
     
     canvas.create_text(825+app.closeInvHeight/2,50+app.closeInvHeight/2,
                             text='X')
@@ -471,10 +649,14 @@ def drawPlanting(app,canvas):
             canvas.create_rectangle(colX0,colY0,colX0+app.plantingSlot,
                 colY0+app.plantingSlot)
             
-            inv = app.seedInv[j][i]
-            for seedName in inv:
-                seedNum = inv[seedName]
+            seedName = app.seedInv[j][i][0]
+            seedCount = app.seedInv[j][i][1]
             canvas.create_text(colX0+app.plantingSlot/2,
-                colY0+app.plantingSlot/2,text=seedName+' '+str(seedNum))
+                colY0+app.plantingSlot/2,text=seedName+' '+str(seedCount))
+    
+    canvas.create_rectangle(app.unplantX0,app.unplantY0,
+        app.unplantX0+app.unplantWidth,app.unplantY0+app.unplantHeight)
+    canvas.create_text(app.unplantX0+app.unplantWidth/2,
+        app.unplantY0+app.unplantHeight/2,text='remove plants')
 
 runApp(width=900,height=700)
