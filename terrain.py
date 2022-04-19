@@ -3,7 +3,11 @@ import random
 # procedural terrain generation code based off of Kate Weeden:
 # https://medium.com/inspired-to-program-%E3%85%82-%D9%88-%CC%91%CC%91/procedural-generation-in-python-7b75127b2f74 
 
+# voronoi with grid row/col values idea from 
+# https://www.cs.cmu.edu/~112/notes/student-tp-guides/Terrain.pdf 
+
 def generateTerrain(width,height):
+    # use later for temp generation
     plotSize = 10
     rows = height//plotSize
     cols = width//plotSize
@@ -62,8 +66,7 @@ def generateTerrain(width,height):
         normalized.append(newRow)
     return normalized
 
-# voronoi with grid row/col values idea from 
-# https://www.cs.cmu.edu/~112/notes/student-tp-guides/Terrain.pdf 
+
 def distance(x0,y0,x1,y1):
     return ((y1-y0)**2 + (x1-x0)**2)**0.5
 
