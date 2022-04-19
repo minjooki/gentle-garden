@@ -7,12 +7,17 @@ from helper import *
 # https://www.cs.cmu.edu/~112/notes/notes-animations-part2.html 
 
 def appStarted(app):
+    app.timeElapsed = 0
+
     app.width,app.height = 900,700
     app.mode = 'startMode'
 
     app.isNewGame = True
     app.newX0,app.newY0,app.newWidth,app.newHeight = (350,325,200,75)
     app.oldX0,app.oldY0 = (350,450)
+
+    app.charX,app.charY = (450,450)
+    app.charWidth,app.charHeight = (10,15)
 
     app.openInventory = False
     app.closeInvHeight = 25
@@ -70,6 +75,12 @@ def appStarted(app):
     app.stopRemoveWidth = 90
     app.stopRemoveHeight = 30
 
+    app.waterStartX0,app.waterStartY0 = (250,0)
+    app.waterStartWidth,app.waterStartHeight = (100,50)
+    app.waterStopX0,app.waterStopY0 = (500,10)
+    app.waterStopWidth,app.waterStopHeight = (90,30)
+    app.isWatering = False
+
     app.plantingSide = ((app.plantingX1-app.plantingX0)-(app.plantingSlot*3))/4
     app.plantingTop = ((app.plantingY1-app.plantingY0)-(app.plantingSlot*2))/3
 
@@ -79,6 +90,8 @@ def appStarted(app):
     
     app.treePoints = {'apple':[],'peach':[],'lemon':[]}
     app.plantPoints = {'strawb':[],'blackb':[],'tomato':[]}
+    app.allSeedClasses = {}
+    app.allPlantClasses = {}
 
     app.appleSeeds = 5
     app.apples = 0
@@ -111,7 +124,6 @@ def appStarted(app):
     app.blackbSeedInvY0 = (app.plantingY0+app.plantingSlot+app.plantingTop*2)
 
     app.isPlanting = False
-    app.startSeed = False
     app.currSeed = None
 
     # dictionary mapping level to generated terrain
@@ -121,6 +133,12 @@ def appStarted(app):
     app.board = [[0]*app.cols for row in range(app.rows)]
     updateBoard(app)
     updateSeedInv(app)
+
+def timerFired(app):
+    # TEMP if 10 seconds pass, move on
+    app.timeElapsed += 10
+    if app.timeElapsed >= 1000:
+        checkForGrowth(app)
 
 def makeTerrain(app):
     # makes terrain to app.terrain
@@ -255,14 +273,16 @@ def mousePressed(app,event):
                  or app.board[row][col]==3)):
             if isLegalTree(app,row,col,5,1,3):
                 treeOnBoard(app,row,col,5)
-                app.treePoints[app.currSeed].append((row,col))
+                app.treePoints[app.currSeed].append((row+2,col))
+                startSeed(app,row+2,col)
                 app.isPlanting = False
 
         elif (app.currSeed in ['strawb','blackb','tomato'] and 
                 (app.board[row][col]==2 or app.board[row][col]==4)):
             if isLegalPlant(app,row,col,6,2,4):
                 plantOnBoard(app,row,col,6)
-                app.plantPoints[app.currSeed].append((row,col))
+                app.plantPoints[app.currSeed].append((row+1,col))
+                startSeed(app,row+1,col)
                 app.isPlanting = False
         if app.isPlanting==False:
             updateSeeds(app)
@@ -278,6 +298,63 @@ def mousePressed(app,event):
         elif clickedOn(app.cx,app.cy,app.stopRemoveX0,app.stopRemoveY0,
             app.stopRemoveWidth,app.stopRemoveHeight):
             app.removingPlants = False
+
+    if (app.isPlanting==False and app.removingPlants==False and 
+        clickedOn(app.cx,app.cy,app.waterStartX0,app.waterStartY0,
+            app.waterStartWidth,app.waterStartHeight)):
+        app.isWatering = True
+    
+    elif clickedOn(app.cx,app.cy,app.waterStopX0,app.waterStopY0,
+        app.waterStopWidth,app.waterStopHeight) and app.isWatering:
+        app.isWatering = False
+    
+    if app.isWatering:
+        # update class and water
+        (row,col) = getBoardRowCol(app,app.cx,app.cy)
+
+        for treeType in app.treePoints:
+            coord = (row,col)
+            if (coord in app.treePoints[treeType] and 
+                coord in app.allSeedClasses):
+                seed = app.allSeedClasses[coord]
+                seed.waterPlant()
+                changeSoilColor(app,row,col,'tree')
+            elif (coord in app.treePoints[treeType] and 
+                coord in app.allPlantClasses):
+                plant = app.allPlantClasses[coord]
+                plant.waterPlant()
+                changeSoilColor(app,row,col,'tree')
+        
+        for plantType in app.plantPoints:
+            coord = (row,col)
+            if (coord in app.plantPoints[plantType] and 
+                coord in app.allSeedClasses):
+                seed = app.allSeedClasses[coord]
+                seed.waterPlant()
+                changeSoilColor(app,row,col,'plant')
+            elif (coord in app.plantPoints[plantType] and 
+                coord in app.allPlantClasses):
+                plant = app.allPlantClasses[coord]
+                plant.waterPlant()
+                changeSoilColor(app,row,col,'plant')
+
+def changeSoilColor(app,row,col,type):
+    # change soil color once watered
+    if type=='tree':
+        for drow in range(-4,+1):
+            for dcol in range(-2,3):
+                newRow = row + drow
+                newCol = col + dcol
+                if newCol!=col or newRow!=row:
+                    app.board[newRow][newCol] = 100
+    elif type=='plant':
+        for drow in range(-2,+1):
+            for dcol in range(-1,2):
+                newRow = row + drow
+                newCol = col + dcol
+                if newCol!=col or newRow!=row:
+                    app.board[newRow][newCol] = 100
+
 
 def removeTree(app,row,col):
     for drow in range(-5,1):
@@ -295,6 +372,13 @@ def removePlant(app,row,col):
             newRow = row + drow
             newCol = col + dcol
             app.board[newRow][newCol] = 2
+    for plantType in app.plantPoints:
+        if (row,col) in app.plantPoints[plantType]:
+            app.plantPoints[plantType].remove((row,col))
+    if (row,col) in app.allSeedClasses:
+        app.allSeedClasses.remove((row,col))
+    elif (row,col) in app.allPlantClasses:
+        app.allPlantClasses.remove((row,col))
 
 
 def updateSeedInv(app):
@@ -384,9 +468,53 @@ def getBoardRowCol(app,x,y):
     return (row,col)
 
 
-def isStartSeed(app):
-    if app.startSeed==True:
-        newSeed = Plant(app.currSeed)
+def startSeed(app,row,col):
+    coord = (row,col)
+    newSeed = NewPlant(coord,app.currSeed)
+    app.allSeedClasses[coord] = newSeed
+    app.currSeed = None
+
+
+
+def checkForGrowth(app):
+    for coord in app.allSeedClasses:
+        plant = app.allSeedClasses[coord]
+        # just a seed
+        plant.checkGrowth()
+        if plant.stage==0:
+            print('yes')
+            # fix this -- does the same thing as line 122 in plant.py,
+            # but needed in the NewSeed
+            if plant.growth>=4:
+                sprout = Seed(plant.coord,plant.type)
+                app.allSeedClasses.remove(coord)
+                app.allPlantClasses[coord] = sprout
+    
+    for coord in app.allPlantClasses:
+        plant = app.allPlantClasses[coord]
+        # all but seeds
+        plant.checkGrowth()
+        (row,col) = plant.coord
+        if plant.stage == 2:
+            # if small plant/tree
+            if plant.type in ['apple','peach','lemon']:
+                app.board[row][col] = 51
+            else:
+                app.board[row][col] = 61
+        elif plant.stage == 3:
+            # if med plant/tree
+            if plant.type in ['apple','peach','lemon']:
+                app.board[row][col] = 52
+            else:
+                app.board[row][col] = 62
+        elif plant.stage == 4:
+            # if mature plant/tree
+            if plant.type in ['apple','peach','lemon']:
+                app.board[row][col] = 53
+            else:
+                app.board[row][col] = 63
+            
+
 
 ####################
 #### START MODE ####
@@ -481,16 +609,23 @@ def exitMode_mousePressed(app,event):
 def redrawAll(app,canvas):
     
     drawTerrain(app,canvas)
-    # drawChar(app,canvas)
+    drawChar(app,canvas)
     drawMenuHead(app,canvas)
 
     if app.openInventory:
         drawInventory(app,canvas)
     elif app.openPlanting:
         drawPlanting(app,canvas)
-    
-    if app.removingPlants:
+    elif app.removingPlants:
         drawStopRemove(app,canvas)
+    elif app.isWatering:
+        drawStopWater(app,canvas)
+
+def drawStopWater(app,canvas):
+    canvas.create_rectangle(app.waterStopX0,app.waterStopY0,
+        app.waterStopX0+app.waterStopWidth,app.waterStopY0+app.waterStopHeight)
+    canvas.create_text(app.waterStopX0+app.waterStopWidth/2,
+        app.waterStopY0+app.waterStopHeight/2,text='finish watering')
 
 def drawStopRemove(app,canvas):
     canvas.create_rectangle(app.stopRemoveX0,app.stopRemoveY0,
@@ -571,14 +706,18 @@ def getTerrainColor(app,terrainNum):
     elif terrainNum==36:
         # fruit -- teal
         return rgbString(32,178,170)
+    
+    elif terrainNum==100:
+        # watered soil
+        return rgbString(71,24,4)
 
 
-# def drawChar(app,canvas):
-#     x0 = app.charX - app.charWidth/2
-#     y0 = app.charY - app.charHeight/2
-#     x1 = app.charX + app.charWidth/2
-#     y1 = app.charY + app.charHeight/2
-#     canvas.create_rectangle(x0,y0,x1,y1,fill="yellow")
+def drawChar(app,canvas):
+    x0 = app.charX - app.charWidth/2
+    y0 = app.charY - app.charHeight/2
+    x1 = app.charX + app.charWidth/2
+    y1 = app.charY + app.charHeight/2
+    canvas.create_rectangle(x0,y0,x1,y1,fill="yellow")
 
 
 def drawMenuHead(app,canvas):
@@ -610,6 +749,7 @@ def drawMenuHead(app,canvas):
 
 
 def drawInventory(app,canvas):
+    # draw inventory of food items
     invMargin = 50
     canvas.create_rectangle(invMargin,invMargin,
                 app.width-invMargin,app.height-invMargin,fill="white")
@@ -633,6 +773,7 @@ def drawInventory(app,canvas):
                             text='X')
 
 def drawPlanting(app,canvas):
+    # draw screen for seeds and to plant
     canvas.create_text(app.plantingX0+(app.plantingX1-app.plantingX0)/2,
         app.plantingY0+(app.plantingY1-app.plantingY0)/2,
         text='select seed to plant and press enter to start planting!')

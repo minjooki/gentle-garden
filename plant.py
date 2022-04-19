@@ -1,12 +1,15 @@
 from cmu_112_graphics import *
 import random
 
-class Plant:
+class NewPlant:
     # super class with watering, temp, and all main fxns
 
-    def __init__(self,type):
+    def __init__(self,coord,type):
+        self.coord = coord
         self.type = type
         self.growth = 0
+        # stage = seed, small tree, small plant, etc.
+        self.stage = 0
 
         # different plants have different temperatures to grow
         if type=='peach' or type=='apple':
@@ -21,11 +24,11 @@ class Plant:
             self.bestGrowth = (60,75)
             self.slowGrowth = (50,59,76,84)
             self.noGrowth = (40,49,85,99)
-        elif type=='strawberry':
+        elif type=='strawb':
             self.bestGrowth = (60,80)
             self.slowGrowth = (45,59,81,89)
             self.noGrowth = (40,44,90,99)
-        elif type=='blackberry':
+        elif type=='blackb':
             self.bestGrowth = (60,70)
             self.slowGrowth = (50,59,71,85)
             self.noGrowth = (40,49,86,99)
@@ -40,6 +43,7 @@ class Plant:
         # self.isDead = isPlantDead()
     
     def waterPlant(self):
+        # fxn to water plant
         self.waterLevel += 1
         self.updateWaterStatus()
     
@@ -103,146 +107,114 @@ class Plant:
             self.overallStatus = 10
             if self.isDry or self.isOverwatered:
                 self.overallStatus -= 3
+        
+        if self.overallStatus <= 3:
+            # plant doesn't die but doesn't grow :(
+            self.overallStatus = 3
     
-    def isPlantDead(self):
-        if self.overallStatus < 0:
-            return True
-        return False
     
     def growPlant(self):
         if self.overallStatus >= 8:
             self.growth += 2
         elif self.overallStatus >= 4 and self.overallStatus <= 7:
             self.growth += 1
+    
+    def checkGrowth(self):
+        if self.growth>=4:
+            Seed(self.coord,self.type)
 
 
-class Seed(Plant):
+class Seed(NewPlant):
     # checks if full seed plant
-    def __init__(self,type):
-        super().__init__(type)
+    def __init__(self,coord,type):
+        super().__init__(self,coord,type)
         self.growth = 0
     
     def checkGrowth(self,type):
-        if self.growth >= 4:
-            Sprout(type)
-
-class Sprout(Plant):
-    def __init__(self,type):
-        super().__init__(type)
-        # start at 0 again
-        self.growth = 0
-    
-    def checkGrowth(self,type):
-        if self.growth >= 4:
+        if self.growth>=4 and self.growth<8:
+            # sprout
+            self.stage = 1
+        # split between plant and tree
+        elif self.growth>=8:
+            self.stage = 2
             if type in ['peach','apple','lemon']:
-                SmallTree(type)
+                Tree(type)
             else:
-                SmallPlant(type)
+                Plant(type)
 
-# trees
-class SmallTree(Plant):
-    def __init__(self,type):
-        super().__init__(type)
+# trees - second attempt
+class Tree(NewPlant):
+    def __init__(self,coord,type):
+        super().__init__(self,coord,type)
         self.growth = 0
-
-    def checkGrowth(self,type):
-        if self.growth >= 6:
-            MedTree(type)
-
-
-class MedTree(Plant):
-    def __init__(self,type):
-        super().__init__(type)
-        self.growth = 0
+        # small tree
+        self.stage = 2
     
     def checkGrowth(self,type):
-        if self.growth >= 8:
-            MatureTree(type)
+        if self.growth>=6 and self.growth<14:
+            # medium tree
+            self.stage = 3
+        elif self.growth>=14 and self.growth<22:
+            # mature tree
+            self.stage = 4
+        elif self.growth>=22 and self.growth<26:
+            # blooming tree
+            self.stage = 5
+        elif self.growth>=26 and self.growth<30:
+            # unripe tree
+            self.stage = 6
+        elif self.growth>=30:
+            # has fruits
+            self.stage = 7
+            numFruits = random.randint(2,6)
+            FruitingTree(self,type,numFruits)
+
+class FruitingTree:
+    def __init__(self,type,numFruits):
+        if type=='apple':
+            self.fruit = 0
+        elif type=='peach':
+            self.fruit == 1
+        elif type=='lemon':
+            self.fruit == 2
+        
+        self.numFruits = numFruits
 
 
-class MatureTree(Plant):
-    def __init__(self,type):
-        super().__init__(type)
+
+class Plant(NewPlant):
+    def __init__(self,coord,type):
+        super().__init__(self,coord,type)
         self.growth = 0
+        # small plant
+        self.stage = 2
     
     def checkGrowth(self,type):
-        if self.growth >= 8:
-            FlowerTree(type)
+        if self.growth>=2 and self.growth<6:
+            # med plant
+            self.stage = 3
+        elif self.growth>=6 and self.growth<12:
+            # mature plant
+            self.stage = 4
+        elif self.growth>=12 and self.growth<14:
+            # flowering plant
+            self.stage = 5
+        elif self.growth>=14 and self.growth<18:
+            # unripe plant
+            self.stage = 6
+        elif self.growth>=18:
+            # fruiting plant
+            self.stage = 7
+            numFruits = random.randint(3,8)
+            FruitingPlant(self,type,numFruits)
 
-
-class FlowerTree(Plant):
-    def __init__(self,type):
-        super().__init__(type)
-        self.growth = 0
-    
-    def checkGrowth(self,type):
-        if self.growth >= 4:
-            UnripeTree(type)
-
-
-class UnripeTree(Plant):
-    def __init__(self,type):
-        super().__init__(type)
-        self.growth = 0
-    
-    def checkGrowth(self,type):
-        if self.growth >= 4:
-            FruitTree(type)
-
-
-class FruitTree:
-    def __init__(self,type):
-        self.type = type
-        self.numFruits = random.randint(2,6)
-
-
-# plants
-class SmallPlant(Plant):
-    def __init__(self,type):
-        super().__init__(type)
-        self.growth = 0
-    
-    def checkGrowth(self,type):
-        if self.growth >= 2:
-            MedPlant(type)
-
-class MedPlant(Plant):
-    def __init__(self,type):
-        super().__init__(type)
-        self.growth = 0
-    
-    def checkGrowth(self,type):
-        if self.growth >= 4:
-            MaturePlant(type)
-
-class MaturePlant(Plant):
-    def __init__(self,type):
-        super().__init__(type)
-        self.growth = 0
-    
-    def checkGrowth(self,type):
-        if self.growth >= 6:
-            FlowerPlant(type)
-
-class FlowerPlant(Plant):
-    def __init__(self,type):
-        super().__init__(type)
-        self.growth = 0
-    
-    def checkGrowth(self,type):
-        if self.growth >= 2:
-            UnripePlant(type)
-
-class UnripePlant(Plant):
-    def __init__(self,type):
-        super().__init__(type)
-        self.growth = 0
-    
-    def checkGrowth(self,type):
-        if self.growth >= 4:
-            FruitPlant(type)
-
-class FruitPlant:
-    def __init__(self,type):
-        self.numFruits = random.randint(3,8)
-    
+class FruitingPlant:
+    def __init__(self,type,numFruits):
+        if type == 'strawb':
+            self.fruit = 0
+        elif type == 'tomato':
+            self.fruit = 1
+        elif type == 'blackb':
+            self.fruit = 2
+        
+        self.numFruits = numFruits
