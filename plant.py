@@ -131,28 +131,6 @@ class Seed(NewPlant):
     def __init__(self,coord,type):
         super().__init__(coord,type)
         self.growth = 0
-        ## TEMPORARY until fix
-        # if type=='peach' or type=='apple':
-        #     self.bestGrowth = (65,75)
-        #     self.slowGrowth = (50,64,76,90)
-        #     self.noGrowth = (40,49,91,99)
-        # elif type=='lemon':
-        #     self.bestGrowth = (75,85)
-        #     self.slowGrowth = (60,74,86,99)
-        #     self.noGrowth = (50,59,100,110)
-        # elif type=='tomato':
-        #     self.bestGrowth = (60,75)
-        #     self.slowGrowth = (50,59,76,84)
-        #     self.noGrowth = (40,49,85,99)
-        # elif type=='strawb':
-        #     self.bestGrowth = (60,80)
-        #     self.slowGrowth = (45,59,81,89)
-        #     self.noGrowth = (40,44,90,99)
-        # elif type=='blackb':
-        #     self.bestGrowth = (60,70)
-        #     self.slowGrowth = (50,59,71,85)
-        #     self.noGrowth = (40,49,86,99)
-        ####
     
     def checkGrowth(self,type):
         if self.growth>=4 and self.growth<8:
@@ -169,7 +147,7 @@ class Seed(NewPlant):
 # trees - second attempt
 class Tree(NewPlant):
     def __init__(self,coord,type):
-        super().__init__(self,coord,type)
+        super().__init__(coord,type)
         self.growth = 0
         # small tree
         self.stage = 2
@@ -192,24 +170,23 @@ class Tree(NewPlant):
             # has fruits
             self.stage = 7
             numFruits = random.randint(2,6)
-            FruitingTree(self,type,numFruits)
+            FruitingTree(self.type,numFruits)
 
 class FruitingTree:
     def __init__(self,type,numFruits):
-        if type=='apple':
-            self.fruit = 0
-        elif type=='peach':
-            self.fruit == 1
-        elif type=='lemon':
-            self.fruit == 2
         
         self.numFruits = numFruits
+    
+    def pickFruit(self):
+        self.numFruits -= 1
+        if self.numFruits < 0:
+            self.numFruits = 0
 
 
 
 class Plant(NewPlant):
     def __init__(self,coord,type):
-        super().__init__(self,coord,type)
+        super().__init__(coord,type)
         self.growth = 0
         # small plant
         self.stage = 2
@@ -232,15 +209,14 @@ class Plant(NewPlant):
             # fruiting plant
             self.stage = 7
             numFruits = random.randint(3,8)
-            FruitingPlant(self,type,numFruits)
+            FruitingPlant(self.type,numFruits)
 
 class FruitingPlant:
     def __init__(self,type,numFruits):
-        if type == 'strawb':
-            self.fruit = 0
-        elif type == 'tomato':
-            self.fruit = 1
-        elif type == 'blackb':
-            self.fruit = 2
         
         self.numFruits = numFruits
+    
+    def pickFruit(self):
+        self.numFruits -= 1
+        if self.numFruits < 0:
+            self.numFruits = 0
