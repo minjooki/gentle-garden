@@ -42,6 +42,11 @@ class NewPlant:
         self.overallStatus = 10
         # self.isDead = isPlantDead()
     
+    def waterOvernight(self):
+        # plant loses water status at night
+        self.waterLevel -= 2
+        self.updateWaterStatus()
+
     def waterPlant(self):
         # fxn to water plant
         self.waterLevel += 1
@@ -114,21 +119,40 @@ class NewPlant:
     
     
     def growPlant(self):
+        self.getOverallStatus()
         if self.overallStatus >= 8:
             self.growth += 2
         elif self.overallStatus >= 4 and self.overallStatus <= 7:
             self.growth += 1
-    
-    def checkGrowth(self):
-        if self.growth>=4:
-            Seed(self.coord,self.type)
 
 
 class Seed(NewPlant):
     # checks if full seed plant
     def __init__(self,coord,type):
-        super().__init__(self,coord,type)
+        super().__init__(coord,type)
         self.growth = 0
+        ## TEMPORARY until fix
+        # if type=='peach' or type=='apple':
+        #     self.bestGrowth = (65,75)
+        #     self.slowGrowth = (50,64,76,90)
+        #     self.noGrowth = (40,49,91,99)
+        # elif type=='lemon':
+        #     self.bestGrowth = (75,85)
+        #     self.slowGrowth = (60,74,86,99)
+        #     self.noGrowth = (50,59,100,110)
+        # elif type=='tomato':
+        #     self.bestGrowth = (60,75)
+        #     self.slowGrowth = (50,59,76,84)
+        #     self.noGrowth = (40,49,85,99)
+        # elif type=='strawb':
+        #     self.bestGrowth = (60,80)
+        #     self.slowGrowth = (45,59,81,89)
+        #     self.noGrowth = (40,44,90,99)
+        # elif type=='blackb':
+        #     self.bestGrowth = (60,70)
+        #     self.slowGrowth = (50,59,71,85)
+        #     self.noGrowth = (40,49,86,99)
+        ####
     
     def checkGrowth(self,type):
         if self.growth>=4 and self.growth<8:
@@ -138,9 +162,9 @@ class Seed(NewPlant):
         elif self.growth>=8:
             self.stage = 2
             if type in ['peach','apple','lemon']:
-                Tree(type)
+                Tree(self.coord,self.type)
             else:
-                Plant(type)
+                Plant(self.coord,self.type)
 
 # trees - second attempt
 class Tree(NewPlant):
@@ -151,6 +175,7 @@ class Tree(NewPlant):
         self.stage = 2
     
     def checkGrowth(self,type):
+        self.getOverallStatus()
         if self.growth>=6 and self.growth<14:
             # medium tree
             self.stage = 3
@@ -190,6 +215,7 @@ class Plant(NewPlant):
         self.stage = 2
     
     def checkGrowth(self,type):
+        self.getOverallStatus()
         if self.growth>=2 and self.growth<6:
             # med plant
             self.stage = 3

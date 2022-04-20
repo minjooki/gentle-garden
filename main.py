@@ -126,6 +126,8 @@ def appStarted(app):
     app.isPlanting = False
     app.currSeed = None
 
+    app.currTemp = 75
+
     # dictionary mapping level to generated terrain
     app.terrain = makeTerrain(app)
     app.cellSize = 10
@@ -137,8 +139,13 @@ def appStarted(app):
 def timerFired(app):
     # TEMP if 10 seconds pass, move on
     app.timeElapsed += 10
-    if app.timeElapsed >= 1000:
+    if (app.mode!='exitMode' and app.mode!='startMode' and app.mode!='nightMode'
+         and app.timeElapsed >= 800):
         checkForGrowth(app)
+        app.mode = 'nightMode'
+        nightMode_reduceWater(app)
+        app.timeElapsed = 0
+    
 
 def makeTerrain(app):
     # makes terrain to app.terrain
@@ -303,6 +310,10 @@ def mousePressed(app,event):
         clickedOn(app.cx,app.cy,app.waterStartX0,app.waterStartY0,
             app.waterStartWidth,app.waterStartHeight)):
         app.isWatering = True
+        app.openPlanting = False
+        app.currSeed = None
+        app.isPlanting = False
+        app.openInventory = None
     
     elif clickedOn(app.cx,app.cy,app.waterStopX0,app.waterStopY0,
         app.waterStopWidth,app.waterStopHeight) and app.isWatering:
@@ -311,34 +322,53 @@ def mousePressed(app,event):
     if app.isWatering:
         # update class and water
         (row,col) = getBoardRowCol(app,app.cx,app.cy)
+        changeWaterLevel(app,row,col,True)
 
+def changeWaterLevel(app,row,col,watering):
+    # change water and change soil
         for treeType in app.treePoints:
             coord = (row,col)
             if (coord in app.treePoints[treeType] and 
                 coord in app.allSeedClasses):
                 seed = app.allSeedClasses[coord]
-                seed.waterPlant()
-                changeSoilColor(app,row,col,'tree')
+                if watering:
+                    seed.waterPlant()
+                status = getWaterState(seed)
+                changeSoilColor(app,row,col,'tree',status)
             elif (coord in app.treePoints[treeType] and 
                 coord in app.allPlantClasses):
                 plant = app.allPlantClasses[coord]
-                plant.waterPlant()
-                changeSoilColor(app,row,col,'tree')
+                if watering:
+                    plant.waterPlant()
+                status = getWaterState(plant)
+                changeSoilColor(app,row,col,'tree',status)
         
         for plantType in app.plantPoints:
             coord = (row,col)
             if (coord in app.plantPoints[plantType] and 
                 coord in app.allSeedClasses):
                 seed = app.allSeedClasses[coord]
-                seed.waterPlant()
-                changeSoilColor(app,row,col,'plant')
+                if watering:
+                    seed.waterPlant()
+                status = getWaterState(seed)
+                changeSoilColor(app,row,col,'plant',status)
             elif (coord in app.plantPoints[plantType] and 
                 coord in app.allPlantClasses):
                 plant = app.allPlantClasses[coord]
-                plant.waterPlant()
-                changeSoilColor(app,row,col,'plant')
+                if watering:
+                    plant.waterPlant()
+                status = getWaterState(plant)
+                changeSoilColor(app,row,col,'plant',status)
 
-def changeSoilColor(app,row,col,type):
+def getWaterState(plant):
+    if plant.isOverwatered:
+        return 'overwatered'
+    elif plant.isDry:
+        return 'dry'
+    else:
+        return
+
+def changeSoilColor(app,row,col,type,status):
     # change soil color once watered
     if type=='tree':
         for drow in range(-4,+1):
@@ -346,14 +376,25 @@ def changeSoilColor(app,row,col,type):
                 newRow = row + drow
                 newCol = col + dcol
                 if newCol!=col or newRow!=row:
-                    app.board[newRow][newCol] = 100
+                    if status=='overwatered':
+                        app.board[newRow][newCol] = 101
+                    elif status=='dry':
+                        app.board[newRow][newCol] = 99
+                    else:
+                        app.board[newRow][newCol] = 100
     elif type=='plant':
         for drow in range(-2,+1):
             for dcol in range(-1,2):
                 newRow = row + drow
                 newCol = col + dcol
                 if newCol!=col or newRow!=row:
-                    app.board[newRow][newCol] = 100
+                    if newCol!=col or newRow!=row:
+                        if status=='overwatered':
+                            app.board[newRow][newCol] = 101
+                        elif status=='dry':
+                            app.board[newRow][newCol] = 99
+                        else:
+                            app.board[newRow][newCol] = 100
 
 
 def removeTree(app,row,col):
@@ -477,23 +518,13 @@ def startSeed(app,row,col):
 
 
 def checkForGrowth(app):
-    for coord in app.allSeedClasses:
-        plant = app.allSeedClasses[coord]
-        # just a seed
-        plant.checkGrowth()
-        if plant.stage==0:
-            print('yes')
-            # fix this -- does the same thing as line 122 in plant.py,
-            # but needed in the NewSeed
-            if plant.growth>=4:
-                sprout = Seed(plant.coord,plant.type)
-                app.allSeedClasses.remove(coord)
-                app.allPlantClasses[coord] = sprout
-    
+    print('in')
     for coord in app.allPlantClasses:
+        # check all plants
         plant = app.allPlantClasses[coord]
-        # all but seeds
-        plant.checkGrowth()
+        plant.checkTemp(app.currTemp)
+        plant.growPlant()
+        plant.checkGrowth(plant.type)
         (row,col) = plant.coord
         if plant.stage == 2:
             # if small plant/tree
@@ -513,7 +544,42 @@ def checkForGrowth(app):
                 app.board[row][col] = 53
             else:
                 app.board[row][col] = 63
-            
+        elif plant.stage == 5:
+            # flowering
+            if plant.type in ['apple','peach','lemon']:
+                app.board[row][col] = 54
+            else:
+                app.board[row][col] = 64
+        elif plant.stage == 6:
+            # unripe
+            if plant.type in ['apple','peach','lemon']:
+                app.board[row][col] = 55
+            else:
+                app.board[row][col] = 65
+        elif plant.stage == 7:
+            # fruiting
+            if plant.type in ['apple','peach','lemon']:
+                app.board[row][col] = 56
+            else:
+                app.board[row][col] = 66
+
+    removing = []
+    for coord in app.allSeedClasses:
+        # check all seeds, upgrade to plant if needed
+        plant = app.allSeedClasses[coord]
+        # just a seed
+        plant.checkTemp(app.currTemp) # updates class temps
+        plant.growPlant() # updates plant growth
+        print(plant.type)
+        if plant.growth>=4:
+            sprout = Seed(coord,plant.type)
+            removing.append((coord))
+            app.allPlantClasses[coord] = sprout
+    if removing != []:
+        for coord in removing:
+            app.allSeedClasses.pop(coord)
+        removing = []
+
 
 
 ####################
@@ -527,7 +593,7 @@ def startMode_redrawAll(app,canvas):
 
 def drawStartScreen(app,canvas):
     x0,y0,x1,y1 = (0,0,app.width,app.height)
-    canvas.create_rectangle(0,0,app.width,app.height,fill='black')
+    canvas.create_rectangle(x0,y0,x1,y1,fill='black')
     titleX0 = 150
     titleY0 = 100
     titleWidth = 600
@@ -605,6 +671,40 @@ def exitMode_mousePressed(app,event):
 
 
 ###################
+
+####################
+#### NIGHT MODE ####
+####################
+
+def nightMode_timerFired(app):
+    app.timeElapsed += 10
+    if app.timeElapsed >= 500:
+        app.timeElapsed = 0
+        app.mode = None
+
+def nightMode_reduceWater(app):
+    # decrease water level each night so user must water again when needed
+    for coord in app.allPlantClasses:
+        plant = app.allPlantClasses[coord]
+        plant.waterOvernight()
+        row,col = coord
+        changeWaterLevel(app,row,col,False)
+    
+    for coord in app.allSeedClasses:
+        seed = app.allSeedClasses[coord]
+        seed.waterOvernight()
+        row,col = coord
+        changeWaterLevel(app,row,col,False)
+        
+
+def nightMode_redrawAll(app,canvas):
+    canvas.create_rectangle(0,0,app.width,app.height,fill='black')
+    canvas.create_text(app.width/2,app.height/2,text='it is night.',
+        font='Courier 14',fill='white')
+    canvas.create_text(app.width/2,app.height/2+50,
+        text='your plants are growing!',font='Courier 14',fill='white')
+
+#################
 
 def redrawAll(app,canvas):
     
@@ -710,6 +810,13 @@ def getTerrainColor(app,terrainNum):
     elif terrainNum==100:
         # watered soil
         return rgbString(71,24,4)
+    
+    elif terrainNum==99:
+        # dry soil
+        return rgbString(150, 108, 80)
+    elif terrainNum==101:
+        # overwatered soil
+        return rgbString(48, 37, 29)
 
 
 def drawChar(app,canvas):
