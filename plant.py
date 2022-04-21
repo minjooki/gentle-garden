@@ -14,24 +14,19 @@ class NewPlant:
         # different plants have different temperatures to grow
         if type=='peach' or type=='apple':
             self.bestGrowth = (65,75)
-            self.slowGrowth = (50,64,76,90)
-            self.noGrowth = (40,49,91,99)
+            self.slowGrowth = (40,64,76,100)
         elif type=='lemon':
             self.bestGrowth = (75,85)
-            self.slowGrowth = (60,74,86,99)
-            self.noGrowth = (50,59,100,110)
+            self.slowGrowth = (40,74,86,99)
         elif type=='tomato':
             self.bestGrowth = (60,75)
-            self.slowGrowth = (50,59,76,84)
-            self.noGrowth = (40,49,85,99)
+            self.slowGrowth = (40,59,76,99)
         elif type=='strawb':
             self.bestGrowth = (60,80)
-            self.slowGrowth = (45,59,81,89)
-            self.noGrowth = (40,44,90,99)
+            self.slowGrowth = (40,59,81,99)
         elif type=='blackb':
             self.bestGrowth = (60,70)
-            self.slowGrowth = (50,59,71,85)
-            self.noGrowth = (40,49,86,99)
+            self.slowGrowth = (40,59,71,99)
 
         self.tempStatus = None
 
@@ -71,20 +66,9 @@ class NewPlant:
         # too warm
         elif (currTemp>=self.slowGrowth[2]) and (currTemp<=self.slowGrowth[3]):
             self.tempStatus = 3
-        elif ((currTemp>=self.noGrowth[0]) and \
-                (currTemp<=self.noGrowth[1])) or \
-                ((currTemp>=self.noGrowth[2]) and 
-                (currTemp<=self.noGrowth[3])):
-            self.tempStatus = 1
-        else:
-            self.tempStatus = 0
 
     def getOverallStatus(self):
-        # first check if worst case
-        if self.tempStatus==0 or self.tempStatus==1:
-            self.overallStatus = 3
-
-        elif self.tempStatus==3:
+        if self.tempStatus==3:
             # too warm and too dry is bad
             if self.isDry:
                 self.overallStatus -= 2
@@ -131,6 +115,7 @@ class Seed(NewPlant):
     def __init__(self,coord,type):
         super().__init__(coord,type)
         self.growth = 0
+        self.stage = 0
     
     def checkGrowth(self,type):
         if self.growth>=4 and self.growth<8:
@@ -140,9 +125,9 @@ class Seed(NewPlant):
         elif self.growth>=8:
             self.stage = 2
             if type in ['peach','apple','lemon']:
-                Tree(self.coord,self.type)
+                return Tree(self.coord,self.type)
             else:
-                Plant(self.coord,self.type)
+                return Plant(self.coord,self.type)
 
 # trees - second attempt
 class Tree(NewPlant):
@@ -151,36 +136,36 @@ class Tree(NewPlant):
         self.growth = 0
         # small tree
         self.stage = 2
+        self.numFruits = 0
     
     def checkGrowth(self,type):
         self.getOverallStatus()
-        if self.growth>=6 and self.growth<14:
+        if self.growth>=6 and self.growth<10:
+            print('success')
             # medium tree
             self.stage = 3
-        elif self.growth>=14 and self.growth<22:
+        elif self.growth>=10 and self.growth<18:
             # mature tree
             self.stage = 4
-        elif self.growth>=22 and self.growth<26:
+        elif self.growth>=18 and self.growth<24:
             # blooming tree
             self.stage = 5
-        elif self.growth>=26 and self.growth<30:
+        elif self.growth>=24 and self.growth<28:
             # unripe tree
             self.stage = 6
-        elif self.growth>=30:
+        elif self.growth>=28:
             # has fruits
             self.stage = 7
-            numFruits = random.randint(2,6)
-            FruitingTree(self.type,numFruits)
-
-class FruitingTree:
-    def __init__(self,type,numFruits):
-        
-        self.numFruits = numFruits
+            self.numFruits = random.randint(2,6)
     
     def pickFruit(self):
         self.numFruits -= 1
         if self.numFruits < 0:
             self.numFruits = 0
+    
+    def growMoreFruit(self):
+        self.numFruits = random.randint(0,3)
+
 
 
 
@@ -190,16 +175,17 @@ class Plant(NewPlant):
         self.growth = 0
         # small plant
         self.stage = 2
+        self.numFruits = 0
     
     def checkGrowth(self,type):
         self.getOverallStatus()
         if self.growth>=2 and self.growth<6:
             # med plant
             self.stage = 3
-        elif self.growth>=6 and self.growth<12:
+        elif self.growth>=6 and self.growth<10:
             # mature plant
             self.stage = 4
-        elif self.growth>=12 and self.growth<14:
+        elif self.growth>=10 and self.growth<14:
             # flowering plant
             self.stage = 5
         elif self.growth>=14 and self.growth<18:
@@ -208,15 +194,12 @@ class Plant(NewPlant):
         elif self.growth>=18:
             # fruiting plant
             self.stage = 7
-            numFruits = random.randint(3,8)
-            FruitingPlant(self.type,numFruits)
-
-class FruitingPlant:
-    def __init__(self,type,numFruits):
-        
-        self.numFruits = numFruits
+            self.numFruits = random.randint(3,8)
     
     def pickFruit(self):
         self.numFruits -= 1
         if self.numFruits < 0:
             self.numFruits = 0
+    
+    def growMoreFruit(self):
+        self.numFruits = random.randint(0,3)    
