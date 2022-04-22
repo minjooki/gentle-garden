@@ -22,6 +22,7 @@ from pathfinding import *
 # https://scs.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=8a3ab4e2-c322-4f04-86e1-ae6a014ddc64
 # cached photo image code from cmu 112 animations pt 4 notes
 # https://www.cs.cmu.edu/~112/notes/notes-animations-part4.html
+# all art by me
 
 def appStarted(app):
 
@@ -134,8 +135,246 @@ def appStarted(app):
     app.blackbSeedInvX0 = (app.plantingX0+app.plantingSlot*2+app.plantingSide*3)
     app.blackbSeedInvY0 = (app.plantingY0+app.plantingSlot+app.plantingTop*2)
 
+    # BLACKBERRIES
+    app.blackb = app.loadImage('blackb.png')
+    app.blackb = app.scaleImage(app.blackb,5)
+
     app.blackbSprout = app.loadImage('blackbsprout.png')
-    app.blackbSprout = app.scaleImage(app.blackbSprout,2)
+    app.blackbSprout = app.scaleImage(app.blackbSprout,3)
+
+    app.blackbSmall = app.loadImage('blackbSmall.png')
+    app.blackbSmall = app.scaleImage(app.blackbSmall,3)
+
+    app.blackbMed = app.loadImage('blackbMed.png')
+    app.blackbMed = app.scaleImage(app.blackbMed,3)
+
+    app.blackbMat = app.loadImage('blackbMat.png')
+    app.blackbMat = app.scaleImage(app.blackbMat,3)
+
+    app.blackbFlower = app.loadImage('blackbFlower.png')
+    app.blackbFlower = app.scaleImage(app.blackbFlower,3)
+
+    app.blackbUnripe = app.loadImage('blackbUnripe.png')
+    app.blackbUnripe = app.scaleImage(app.blackbUnripe,3)
+
+    app.blackbFruit = app.loadImage('blackbFruit.png')
+    app.blackbFruit = app.scaleImage(app.blackbFruit,3)
+
+    app.blackb1 = app.loadImage('blackb1.png')
+    app.blackb1 = app.scaleImage(app.blackb1,3)
+
+    app.blackb2 = app.loadImage('blackb2.png')
+    app.blackb2 = app.scaleImage(app.blackb2,3)
+
+    app.blackb3 = app.loadImage('blackb3.png')
+    app.blackb3 = app.scaleImage(app.blackb3,3)
+
+    app.blackb4 = app.loadImage('blackb4.png')
+    app.blackb4 = app.scaleImage(app.blackb4,3)
+
+    app.blackb5 = app.loadImage('blackb5.png')
+    app.blackb5 = app.scaleImage(app.blackb5,3)
+
+    app.blackb6 = app.loadImage('blackb6.png')
+    app.blackb6 = app.scaleImage(app.blackb6,3)
+
+## strawberrries
+    app.strawb = app.loadImage('strawb.png')
+    app.strawb = app.scaleImage(app.strawb,5)
+
+    app.strawbSprout = app.loadImage('strawbsprout.png')
+    app.strawbSprout = app.scaleImage(app.strawbSprout,3)
+
+    app.strawbSmall = app.loadImage('strawbSmall.png')
+    app.strawbSmall = app.scaleImage(app.strawbSmall,3)
+
+    app.strawbMed = app.loadImage('strawbMed.png')
+    app.strawbMed = app.scaleImage(app.strawbMed,3)
+
+    app.strawbMat = app.loadImage('strawbMat.png')
+    app.strawbMat = app.scaleImage(app.strawbMat,3)
+
+    app.strawbFlower = app.loadImage('strawbFlower.png')
+    app.strawbFlower = app.scaleImage(app.strawbFlower,3)
+
+    app.strawbUnripe = app.loadImage('strawbUnripe.png')
+    app.strawbUnripe = app.scaleImage(app.strawbUnripe,3)
+
+    app.strawbFruit = app.loadImage('strawbFruit.png')
+    app.strawbFruit = app.scaleImage(app.strawbFruit,3)
+
+    app.strawb1 = app.loadImage('strawb1.png')
+    app.strawb1 = app.scaleImage(app.strawb1,3)
+
+    app.strawb2 = app.loadImage('strawb2.png')
+    app.strawb2 = app.scaleImage(app.strawb2,3)
+
+    app.strawb3 = app.loadImage('strawb3.png')
+    app.strawb3 = app.scaleImage(app.strawb3,3)
+
+    app.strawb4 = app.loadImage('strawb4.png')
+    app.strawb4 = app.scaleImage(app.strawb4,3)
+
+    app.strawb5 = app.loadImage('strawb5.png')
+    app.strawb5 = app.scaleImage(app.strawb5,3)
+
+    ## Tomatoes
+    app.tomato = app.loadImage('tomato.png')
+    app.tomato = app.scaleImage(app.tomato,5)
+
+    app.tomatoSprout = app.loadImage('tomatoSprout.png')
+    app.tomatoSprout = app.scaleImage(app.tomatoSprout,3)
+
+    app.tomatoSmall = app.loadImage('tomatoSmall.png')
+    app.tomatoSmall = app.scaleImage(app.tomatoSmall,3)
+
+    app.tomatoMed = app.loadImage('tomatoMed.png')
+    app.tomatoMed = app.scaleImage(app.tomatoMed,3)
+
+    app.tomatoMat = app.loadImage('tomatoMat.png')
+    app.tomatoMat = app.scaleImage(app.tomatoMat,3)
+
+    app.tomatoFlower = app.loadImage('tomatoFlower.png')
+    app.tomatoFlower = app.scaleImage(app.tomatoFlower,3)
+
+    app.tomatoUnripe = app.loadImage('tomatoUnripe.png')
+    app.tomatoUnripe = app.scaleImage(app.tomatoUnripe,3)
+
+    app.tomatoFruit = app.loadImage('tomatoFruit.png')
+    app.tomatoFruit = app.scaleImage(app.tomatoFruit,3)
+
+    app.tomato1 = app.loadImage('tomato1.png')
+    app.tomato1 = app.scaleImage(app.tomato1,3)
+
+    app.tomato2 = app.loadImage('tomato2.png')
+    app.tomato2 = app.scaleImage(app.tomato2,3)
+
+    app.tomato3 = app.loadImage('tomato3.png')
+    app.tomato3 = app.scaleImage(app.tomato3,3)
+
+    app.tomato4 = app.loadImage('tomato4.png')
+    app.tomato4 = app.scaleImage(app.tomato4,3)
+
+    app.tomato5 = app.loadImage('tomato5.png')
+    app.tomato5 = app.scaleImage(app.tomato5,3)
+
+
+    ## APPLES
+    app.apple = app.loadImage('apple.png')
+    app.apple = app.scaleImage(app.apple,5)
+
+    app.appleSprout = app.loadImage('appleSprout.png')
+    app.appleSprout = app.scaleImage(app.appleSprout,3)
+
+    app.appleSmall = app.loadImage('appleSmall.png')
+    app.appleSmall = app.scaleImage(app.appleSmall,3)
+
+    app.appleMed = app.loadImage('appleMed.png')
+    app.appleMed = app.scaleImage(app.appleMed,3)
+
+    app.appleMat = app.loadImage('appleMat.png')
+    app.appleMat = app.scaleImage(app.appleMat,3)
+
+    app.appleFlower = app.loadImage('appleFlower.png')
+    app.appleFlower = app.scaleImage(app.appleFlower,3)
+
+    app.appleUnripe = app.loadImage('appleUnripe.png')
+    app.appleUnripe = app.scaleImage(app.appleUnripe,3)
+
+    app.appleFruit = app.loadImage('appleFruit.png')
+    app.appleFruit = app.scaleImage(app.appleFruit,3)
+
+    app.apple1 = app.loadImage('apple1.png')
+    app.apple1 = app.scaleImage(app.apple1,3)
+
+    app.apple2 = app.loadImage('apple2.png')
+    app.apple2 = app.scaleImage(app.apple2,3)
+
+    app.apple3 = app.loadImage('apple3.png')
+    app.apple3 = app.scaleImage(app.apple3,3)
+
+    app.apple4 = app.loadImage('apple4.png')
+    app.apple4 = app.scaleImage(app.apple4,3)
+
+    app.apple5 = app.loadImage('apple5.png')
+    app.apple5 = app.scaleImage(app.apple5,3)
+
+    ## LEMONS
+    app.lemon = app.loadImage('lemon.png')
+    app.lemon = app.scaleImage(app.lemon,5)
+
+    app.lemonSprout = app.loadImage('lemonSprout.png')
+    app.lemonSprout = app.scaleImage(app.lemonSprout,3)
+
+    app.lemonSmall = app.loadImage('lemonSmall.png')
+    app.lemonSmall = app.scaleImage(app.lemonSmall,3)
+
+    app.lemonMed = app.loadImage('lemonMed.png')
+    app.lemonMed = app.scaleImage(app.lemonMed,3)
+
+    app.lemonMat = app.loadImage('lemonMat.png')
+    app.lemonMat = app.scaleImage(app.lemonMat,3)
+
+    app.lemonFlower = app.loadImage('lemonFlower.png')
+    app.lemonFlower = app.scaleImage(app.lemonFlower,3)
+
+    app.lemonUnripe = app.loadImage('lemonUnripe.png')
+    app.lemonUnripe = app.scaleImage(app.lemonUnripe,3)
+
+    app.lemonFruit = app.loadImage('lemonFruit.png')
+    app.lemonFruit = app.scaleImage(app.lemonFruit,3)
+
+    app.lemon1 = app.loadImage('lemon1.png')
+    app.lemon1 = app.scaleImage(app.lemon1,3)
+
+    app.lemon2 = app.loadImage('lemon2.png')
+    app.lemon2 = app.scaleImage(app.lemon2,3)
+
+    app.lemon3 = app.loadImage('lemon3.png')
+    app.lemon3 = app.scaleImage(app.lemon3,3)
+
+    app.lemon4 = app.loadImage('lemon4.png')
+    app.lemon4 = app.scaleImage(app.lemon4,3)
+
+    app.lemon5 = app.loadImage('lemon5.png')
+    app.lemon5 = app.scaleImage(app.lemon5,3)
+
+    ## PEACHES
+    app.peach = app.loadImage('peach.png')
+    app.peach = app.scaleImage(app.peach,5)
+
+    app.peachSprout = app.loadImage('peachSprout.png')
+    app.peachSprout = app.scaleImage(app.peachSprout,3)
+
+    app.peachSmall = app.loadImage('peachSmall.png')
+    app.peachSmall = app.scaleImage(app.peachSmall,3)
+
+    app.peachMed = app.loadImage('peachMed.png')
+    app.peachMed = app.scaleImage(app.peachMed,3)
+
+    app.peachMat = app.loadImage('peachMat.png')
+    app.peachMat = app.scaleImage(app.peachMat,3)
+
+    app.peachFlower = app.loadImage('peachFlower.png')
+    app.peachFlower = app.scaleImage(app.peachFlower,3)
+
+    app.peachUnripe = app.loadImage('peachUnripe.png')
+    app.peachUnripe = app.scaleImage(app.peachUnripe,3)
+
+    app.peachFruit = app.loadImage('peachFruit.png')
+    app.peachFruit = app.scaleImage(app.peachFruit,3)
+
+    app.peach1 = app.loadImage('peach1.png')
+    app.peach1 = app.scaleImage(app.peach1,3)
+
+    app.peach2 = app.loadImage('peach2.png')
+    app.peach2 = app.scaleImage(app.peach2,3)
+
+    app.peach3 = app.loadImage('peach3.png')
+    app.peach3 = app.scaleImage(app.peach3,3)
+
+    app.invImages = [[app.apple,app.peach,app.lemon],
+        [app.strawb,app.tomato,app.blackb]]
 
 
     app.isPlanting = False
@@ -162,7 +401,7 @@ def appStarted(app):
     app.displayCols = [0,90]
     app.walkBoxX0,app.walkBoxX1 = (200,700)
 
-    app.charX,app.charY = (450,450)
+    app.charX,app.charY = (400,450)
     app.charWidth,app.charHeight = (10,15)
     app.spriteCounter = 0
     app.cameraOffsetX = 0
@@ -171,7 +410,7 @@ def appStarted(app):
     # sprite sheet
     playerSpriteSheet = 'sprites.png'
     app.spriteSheet = app.loadImage(playerSpriteSheet)
-    app.spriteSheet = app.scaleImage(app.spriteSheet,2) 
+    app.spriteSheet = app.scaleImage(app.spriteSheet,2.5) 
     app.spriteHeight,app.spriteWidth = app.spriteSheet.size
 
     app.sprites = {}
@@ -974,10 +1213,6 @@ def redrawAll(app,canvas):
         drawStopWater(app,canvas)
     elif app.isHarvest:
         drawStopHarvest(app,canvas)
-
-
-   
-
     
 def drawStopHarvest(app,canvas):
     canvas.create_rectangle(app.harvestStopX0,app.harvestStopY0,
@@ -1001,17 +1236,184 @@ def drawStopRemove(app,canvas):
 
 
 def drawTerrain(app,canvas):
+    images = []
     for row in range(app.displayRows[1]):
         for col in range(app.cols):
-            color = getTerrainColor(app,app.board[row][col])
+            color = getTerrainColor(app,row,col)
             x0 = col*app.cellSize
             y0 = row*app.cellSize + app.menuButtonHeight
             x1 = x0 + app.cellSize
             y1 = y0 + app.cellSize + app.menuButtonHeight
-            canvas.create_rectangle(x0,y0,x1,y1,fill=color)
+
+            if isinstance(color,tuple)==False:
+                canvas.create_rectangle(x0,y0,x1,y1,fill=color)
+
+            else:
+                img = getImage(app,color)
+                images.append([img,x0,y0])
+    for image in images:
+        img = image[0]
+        x0 = image[1]
+        y0 = image[2]
+        canvas.create_image(x0+app.cellSize/2,y0+app.cellSize/2,
+            image=ImageTk.PhotoImage(img),anchor='s')
+        
+
+def getImage(app,imagePair):
+    plantType = imagePair[0]
+    stage = imagePair[1]
+    if plantType=='apple':
+        if stage=='sprout':
+            return app.appleSprout
+        elif stage=='small':
+            return app.appleSmall
+        elif stage=='med':
+            return app.appleMed
+        elif stage=='mat':
+            return app.appleMat
+        elif stage=='flower':
+            return app.appleFlower
+        elif stage=='unripe':
+            return app.appleUnripe
+        elif stage=='fruit' or stage==6:
+            return app.appleFruit
+        elif stage==1:
+            return app.apple1
+        elif stage==2:
+            return app.apple2
+        elif stage==3:
+            return app.apple3
+        elif stage==4:
+            return app.apple4
+        elif stage==5:
+            return app.apple5
+    elif plantType=='peach':
+        if stage=='sprout':
+            return app.peachSprout
+        elif stage=='small':
+            return app.peachSmall
+        elif stage=='med':
+            return app.peachMed
+        elif stage=='mat':
+            return app.peachMat
+        elif stage=='flower':
+            return app.peachFlower
+        elif stage=='unripe':
+            return app.peachUnripe
+        elif stage=='fruit' or stage==4: 
+            return app.peachFruit
+        elif stage==1:
+            return app.peach1
+        elif stage==2:
+            return app.peach2
+        elif stage==3:
+            return app.peach3
+
+    elif plantType=='lemon':
+        if stage=='sprout':
+            return app.lemonSprout
+        elif stage=='small':
+            return app.lemonSmall
+        elif stage=='med':
+            return app.lemonMed
+        elif stage=='mat':
+            return app.lemonMat
+        elif stage=='flower':
+            return app.lemonFlower
+        elif stage=='unripe':
+            return app.lemonUnripe
+        elif stage=='fruit' or stage==6: 
+            return app.lemonFruit
+        elif stage==1:
+            return app.lemon1
+        elif stage==2:
+            return app.lemon2
+        elif stage==3:
+            return app.lemon3
+        elif stage==4:
+            return app.lemon4
+
+    elif plantType=='strawb':
+        if stage=='sprout':
+            return app.strawbSprout
+        elif stage=='small':
+            return app.strawbSmall
+        elif stage=='med':
+            return app.strawbMed
+        elif stage=='mat':
+            return app.strawbMat
+        elif stage=='flower':
+            return app.strawbFlower
+        elif stage=='unripe':
+            return app.strawbUnripe
+        elif stage=='fruit' or stage==7: #### check how many each plnt has
+            return app.appleFruit
+        elif stage==1:
+            return app.strawb1
+        elif stage==2:
+            return app.strawb2
+        elif stage==3:
+            return app.strawb3
+        elif stage==4:
+            return app.strawb4
+        elif stage==5:
+            return app.strawb5
+        elif stage==6:
+            return app.strawb6
+    elif plantType=='tomato':
+        if stage=='sprout':
+            return app.tomatoSprout
+        elif stage=='small':
+            return app.tomatoSmall
+        elif stage=='med':
+            return app.tomatoMed
+        elif stage=='mat':
+            return app.tomatoMat
+        elif stage=='flower':
+            return app.tomatoFlower
+        elif stage=='unripe':
+            return app.tomatoUnripe
+        elif stage=='fruit' or stage==6: #### check how many each plnt has
+            return app.tomatoFruit
+        elif stage==1:
+            return app.tomato1
+        elif stage==2:
+            return app.tomato2
+        elif stage==3:
+            return app.tomato3
+        elif stage==4:
+            return app.tomato4
+    elif plantType=='blackb':
+        if stage=='sprout':
+            return app.blackbSprout
+        elif stage=='small':
+            return app.blackbSmall
+        elif stage=='med':
+            return app.blackbMed
+        elif stage=='mat':
+            return app.blackbMat
+        elif stage=='flower':
+            return app.blackbFlower
+        elif stage=='unripe':
+            return app.blackbUnripe
+        elif stage=='fruit' or stage==7: #### check how many each plnt has
+            return app.blackbFruit
+        elif stage==1:
+            return app.blackb1
+        elif stage==2:
+            return app.blackb2
+        elif stage==3:
+            return app.blackb3
+        elif stage==4:
+            return app.blackb4
+        elif stage==5:
+            return app.blackb5
+        elif stage==6:
+            return app.blackb6
 
 
-def getTerrainColor(app,terrainNum):
+def getTerrainColor(app,row,col):
+    terrainNum = app.board[row][col]
     # GRASS
     if terrainNum==0:
         return '#c1e0b7'
@@ -1027,50 +1429,64 @@ def getTerrainColor(app,terrainNum):
         return rgbString(0,128,0)
     elif terrainNum==50:
         # TEMP color to rep stages -- sprout, green
-        return rgbString(50,205,50)
+        plant = getPlantType(app,row,col)
+        return (plant,'sprout')
     elif terrainNum==51:
-        # small tree -- purple
-        return rgbString(123,104,238)
+        # small tree 
+        plant = getPlantType(app,row,col)
+        return (plant,'small')
     elif terrainNum==52:
-        # medium tree -- red
-        return rgbString(255,0,0)
+        # medium tree 
+        plant = getPlantType(app,row,col)
+        return (plant,'med')
     elif terrainNum==53:
-        # mature tree -- lime
-        return rgbString(173,255,47)
+        # mature tree
+        plant = getPlantType(app,row,col)
+        return (plant,'mat')
     elif terrainNum==54:
-        # blooming -- pink
-        return rgbString(255,105,180)
+        # blooming
+        plant = getPlantType(app,row,col)
+        return (plant,'flower')
     elif terrainNum==55:
-        # unripe -- orange
-        return rgbString(255,140,0)
+        # unripe
+        plant = getPlantType(app,row,col)
+        return (plant,'unripe')
     elif terrainNum==56:
-        # fruits -- gray
-        return rgbString(105,105,105)
+        # fruits 
+        plant = getPlantType(app,row,col)
+        return (plant,'fruit')
 
     # TEMP planted plant seed
     elif terrainNum==6:
         return rgbString(0,255,127)
     elif terrainNum==30:
-        # TEMP color to rep -- sprout, yellow
-        return rgbString(255,255,0)
+        # plant sprout
+        plant = getPlantType(app,row,col)
+        return (plant,'sprout')
     elif terrainNum==31:
-        # small plant -- blue
-        return rgbString(135,206,250)
+        # small plant
+        plant = getPlantType(app,row,col)
+        return (plant,'small')
     elif terrainNum==32:
-        # medium plant -- light green
-        return rgbString(143,188,143)
+        # medium plant 
+        plant = getPlantType(app,row,col)
+        return (plant,'med')
     elif terrainNum==33:
-        # mature plant -- purple
-        return rgbString(148,0,211)
+        # mature plant
+        plant = getPlantType(app,row,col)
+        return (plant,'mat')
     elif terrainNum==34:
-        # flowers -- magenta
-        return rgbString(255,0,255)
+        # flowers
+        plant = getPlantType(app,row,col)
+        return (plant,'flower')
     elif terrainNum==35:
-        # unripe -- brown
-        return rgbString(139,69,19)
+        # unripe
+        plant = getPlantType(app,row,col)
+        return (plant,'unripe')
     elif terrainNum==36:
-        # fruit -- teal
-        return rgbString(32,178,170)
+        # fruit
+        plant = getPlantType(app,row,col)
+        return (plant,'fruit')
     
     elif terrainNum==100:
         # watered soil
@@ -1085,18 +1501,39 @@ def getTerrainColor(app,terrainNum):
     
     elif terrainNum=='apple':
         # apple fruit
-        return rgbString()
+        state = getFruitState(app,row,col)
+        return (terrainNum,state)
     elif terrainNum=='peach':
-        return rgbString()
+        state = getFruitState(app,row,col)
+        return (terrainNum,state)
     elif terrainNum=='lemon':
-        return rgbString()
+        state = getFruitState(app,row,col)
+        return (terrainNum,state)
     elif terrainNum=='strawb':
-        return rgbString()
+        state = getFruitState(app,row,col)
+        return (terrainNum,state)
     elif terrainNum=='tomato':
-        return rgbString()
+        state = getFruitState(app,row,col)
+        return (terrainNum,state)
     elif terrainNum=='blackb':
-        return rgbString()
+        state = getFruitState(app,row,col)
+        return (terrainNum,state)
 
+def getFruitState(app,row,col):
+    # counts how many fruits there are
+    if (row,col) in app.allPlantClasses:
+        plant = app.allPlantClasses[(row,col)]
+        if plant.numFruits==0:
+            return 'mat'
+        return plant.numFruits
+
+def getPlantType(app,row,col):
+    if (row,col) in app.allPlantClasses:
+        plant = app.allPlantClasses[(row,col)]
+        return plant.type
+    elif (row,col) in app.allSeedClasses:
+        plant = app.allSeedClasses[(row,col)]
+        return plant.type
 
 def drawChar(app,canvas):
     x0 = app.charX - app.charWidth/2
@@ -1151,13 +1588,14 @@ def drawInventory(app,canvas):
         for i in range(3):
             colX0 = (app.plantingX0+app.plantingSlot*i + app.plantingSide*(i+1))
             colY0 = (app.plantingY0+ app.plantingSlot*j + app.plantingTop*(j+1))
-            canvas.create_rectangle(colX0,colY0,colX0+app.plantingSlot,
-                colY0+app.plantingSlot)
-            
+
             itemName = app.invItems[j][i][0]
             itemCount = app.invItems[j][i][1]
             canvas.create_text(colX0+app.plantingSlot/2,
-                colY0+app.plantingSlot/2,text=itemName+' '+str(itemCount))
+                colY0,text=itemName+' '+str(itemCount))
+            image = app.invImages[j][i]
+            canvas.create_image(colX0+app.plantingSlot/2,
+                colY0+app.plantingSlot/2,image=ImageTk.PhotoImage(image))
 
 def drawPlanting(app,canvas):
     # draw screen for seeds and to plant
