@@ -156,17 +156,18 @@ class Tree(NewPlant):
         elif self.growth>=28:
             # has fruits
             self.stage = 7
-            self.numFruits = random.randint(2,6)
+            self.growFruit()
     
     def pickFruit(self):
         self.numFruits -= 1
         if self.numFruits < 0:
             self.numFruits = 0
     
-    def growMoreFruit(self):
-        self.numFruits = random.randint(0,3)
-
-
+    def growFruit(self):
+        if self.type=='apple' or self.type=='lemon':
+            self.numFruits = 6
+        elif self.type=='peach':
+            self.numFruits = 4
 
 
 class Plant(NewPlant):
@@ -194,12 +195,17 @@ class Plant(NewPlant):
         elif self.growth>=18:
             # fruiting plant
             self.stage = 7
-            self.numFruits = random.randint(3,8)
+            self.growFruit()
     
     def pickFruit(self):
         self.numFruits -= 1
         if self.numFruits < 0:
             self.numFruits = 0
     
-    def growMoreFruit(self):
-        self.numFruits = random.randint(0,3)    
+    def growFruit(self):
+        if self.type=='blackb':
+            self.numFruits = 7
+        elif self.type=='strawb':
+            self.numFruits = 5
+        elif self.type=='tomato':
+            self.numFruits = 6

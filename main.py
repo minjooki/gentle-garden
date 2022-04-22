@@ -5,7 +5,6 @@ import pickle
 from plant import *
 from terrain import *
 from helper import *
-from sounds import *
 from pathfinding import *
 
 # getBoardRowCol and getCellBounds from cmu 112 animations website
@@ -19,6 +18,10 @@ from pathfinding import *
 # pickling guide/helps
 # https://ianlondon.github.io/blog/pickling-basics/
 # https://stackoverflow.com/questions/6568007/how-do-i-save-and-restore-multiple-variables-in-python
+# sprite imaging crop code and move player from 112 mini-lecture on PIL and images
+# https://scs.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=8a3ab4e2-c322-4f04-86e1-ae6a014ddc64
+# cached photo image code from cmu 112 animations pt 4 notes
+# https://www.cs.cmu.edu/~112/notes/notes-animations-part4.html
 
 def appStarted(app):
 
@@ -26,15 +29,13 @@ def appStarted(app):
     app.day = 1
 
     app.width,app.height = 900,700
+
     app.mode = 'startMode'
 
     app.isNewGame = True
 
     app.newX0,app.newY0,app.newWidth,app.newHeight = (350,325,200,75)
     app.oldX0,app.oldY0 = (350,450)
-
-    app.charX,app.charY = (450,450)
-    app.charWidth,app.charHeight = (10,15)
 
     app.openInventory = False
     app.closeInvHeight = 25
@@ -133,6 +134,10 @@ def appStarted(app):
     app.blackbSeedInvX0 = (app.plantingX0+app.plantingSlot*2+app.plantingSide*3)
     app.blackbSeedInvY0 = (app.plantingY0+app.plantingSlot+app.plantingTop*2)
 
+    app.blackbSprout = app.loadImage('blackbsprout.png')
+    app.blackbSprout = app.scaleImage(app.blackbSprout,2)
+
+
     app.isPlanting = False
     app.currSeed = None
 
@@ -145,10 +150,64 @@ def appStarted(app):
     # dictionary mapping level to generated terrain
     app.terrain = makeTerrain(app)
     app.cellSize = 10
-    app.rows,app.cols = (app.height//app.cellSize,app.width//app.cellSize)
+    app.rows,app.cols = 70,90
     app.board = [[0]*app.cols for row in range(app.rows)]
     updateBoard(app.terrain,app.board)
     updateSeedInv(app)
+
+    app.completeWidth,app.completeHeight = getFullTerrain(app)
+
+    # for screen scrolling
+    app.displayRows = [0,70]
+    app.displayCols = [0,90]
+    app.walkBoxX0,app.walkBoxX1 = (200,700)
+
+    app.charX,app.charY = (450,450)
+    app.charWidth,app.charHeight = (10,15)
+    app.spriteCounter = 0
+    app.cameraOffsetX = 0
+    app.direction = 'Down'
+ 
+    # sprite sheet
+    playerSpriteSheet = 'sprites.png'
+    app.spriteSheet = app.loadImage(playerSpriteSheet)
+    app.spriteSheet = app.scaleImage(app.spriteSheet,2) 
+    app.spriteHeight,app.spriteWidth = app.spriteSheet.size
+
+    app.sprites = {}
+    spriteCrop(app)
+
+def getFullTerrain(app):
+    terrainHeight = app.cellSize * len(app.board[0])
+    terrainWidth = app.cellSize * len(app.board)
+    return terrainWidth,terrainHeight
+
+def spriteCrop(app):
+    # sprite sheet cropping
+    app.sprites = {}
+    imageWidth,imageHeight = app.spriteSheet.size
+    for direction in ('Down0','Left1','Right2','Up3'):
+        ind = int(direction[-1:])
+        newDir = direction[:-1]
+        topLeftY = ind*imageHeight/4
+        botRightY = (ind + 1)*imageHeight/4
+        tempSprites = []
+        for j in range(4):
+            topLeftX = j * imageWidth/4
+            botRightX = (j+1) * imageWidth/4
+            sprite = app.spriteSheet.crop((topLeftX,topLeftY,botRightX,botRightY))
+            tempSprites.append(sprite)
+        app.sprites[newDir] = tempSprites
+
+def updateDisplay(app):
+    dcol = app.cameraOffsetX // app.cellSize
+    if dcol<0:
+        app.displayCols[0] -= dcol
+        app.displayCols[1] -= dcol
+    elif dcol>0:
+        app.displayCols[0] += 1
+        app.displayCols[1] += 1
+
 
 def timerFired(app):
     # TEMP if 10 seconds pass, move on
@@ -156,9 +215,11 @@ def timerFired(app):
     if (app.mode!='exitMode' and app.mode!='startMode' and app.mode!='nightMode'
          and app.timeElapsed >= 800):
         checkForGrowth(app)
-        if (len(app.allSeedClasses) + len(app.allPlantClasses))%5==0:
-            app.level += 1
+        totalPlants =  (len(app.allSeedClasses) + len(app.allPlantClasses))
+        newLevel = totalPlants//5 + 1
+        if newLevel > app.level:
             levelUp(app)
+            app.level = newLevel
         app.mode = 'nightMode'
         nightMode_reduceWater(app)
         app.timeElapsed = 0
@@ -186,6 +247,7 @@ def updateBoard(terrain,board):
         seed = seedPair[0]
         for (row,col) in terrain[seed]:
             board[row][col] = terrainType
+    return board
   
 
 def isLegalMove(app,dx,dy):
@@ -197,39 +259,69 @@ def isLegalMove(app,dx,dy):
         return False
     return True
 
+def moveCamera(app,dx):
+    if ((app.charX > app.width-app.walkBoxX0-app.cameraOffsetX) and 
+        app.direction=='Right') or \
+        ((app.charX < -app.cameraOffsetX+app.walkBoxX0) and 
+        (app.direction=='Left')):
+        app.cameraOffsetX -= dx
+    
+    if (app.cameraOffsetX>0 or app.cameraOffsetX<-(app.completeWidth-app.width)):
+        app.cameraOffsetX += dx
+
+    updateDisplay(app)
+
+def movePlayer(app,dy,dx):
+    app.spriteCounter = (app.spriteCounter + 1)%4
+    app.charX += dx
+    app.charY += dy
+
+    if (app.charX < app.walkBoxX0 or 
+        app.charX > (app.completeWidth-app.walkBoxX0)):
+        app.charX -= dx
+    if (app.charY < app.menuButtonHeight + 10 or 
+        app.charY > app.completeHeight):
+        app.charY -= dy
+    
+    moveCamera(app,dx)
+
 def keyPressed(app,event):
     dy,dx = 0,0
     if event.key == 'Up':
-        dy = -10
-        if isLegalMove(app,dx,dy):
-            app.charY -= 10
+        dy = -15
+        app.direction = 'Up'
+        movePlayer(app,dy,dx)
     elif event.key == 'Down':
-        dy = +10
-        if isLegalMove(app,dx,dy):
-            app.charY += 10
+        app.direction = 'Down'
+        dy = +15
+        movePlayer(app,dy,dx)
     elif event.key == 'Right':
-        dx = +10
-        if isLegalMove(app,dx,dy):
-            app.charX += 10
+        app.direction = 'Right'
+        dx = +15
+        movePlayer(app,dy,dx)
     elif event.key == 'Left':
-        dx = -10
-        if isLegalMove(app,dx,dy):
-            app.charX -= 10
-    # elif event.key=='H' or event.key=='h':
-    #     app.graph = makeGraphFromBoard(app.board)
-    #     (startRow,startCol) = getBoardRowCol(app,app.charX,app.charY)
-    #     start = (startRow,startCol)
-    #     target = (app.homeRow,app.homeRow)
-    #     app.pathHome = dijkstra(app.graph,start,target)
-    #     for (row,col) in app.pathHome:
-    #         newX,newY = getCoord(app,row,col)
-    #         app.charX = newX
-    #         app.charY = newY
+        app.direction = 'Left'
+        dx = -15
+        movePlayer(app,dy,dx)
+
+    if event.key=='H' or event.key=='h':
+        app.graph = makeGraphFromBoard(app.board)
+        (startRow,startCol) = getBoardRowCol(app,app.charX,app.charY)
+        start = (startRow,startCol)
+        target = (app.homeRow,app.homeCol)
+        app.pathHome = dijkstra(app.graph,start,target)
+        goHome(app)
 
     # use enter key to pick seed and start planting
     if app.openPlanting and app.currSeed!=None and event.key=='Enter':
         app.openPlanting = False
         app.isPlanting = True
+
+def goHome(app):
+    for (row,col) in app.pathHome:
+        newX,newY = getCoord(app,row,col)
+        app.charX = newX
+        app.charY = newY
 
 def getCoord(app,row,col):
     x0 =  col * app.cellSize
@@ -248,7 +340,7 @@ def mousePressed(app,event):
     elif clickedOn(app.cx,app.cy,50,0,50+app.menuButtonWidth,
         app.menuButtonHeight):
         app.openInventory = True
-        app.openPlanting = False
+        app.openPlanting = False 
         app.isPlanting = False
         app.isHarvest = False
         app.isWatering = False
@@ -386,14 +478,16 @@ def mousePressed(app,event):
                 fruit = plant.type
                 updateFruits(app,fruit)
 
-def levelUp(app):
-    newBoard = [[0]*app.cols for row in range(app.rows)]
-    newTerrain = makeTerrain(app)
-    updateBoard(newTerrain,newBoard)
 
-    for row in range(len(app.board)):
+def levelUp(app):
+    newBoard = [[0]*90 for row in range(70)]
+    newTerrain = makeTerrain(app)
+    newBoard = updateBoard(newTerrain,newBoard)
+
+    for row in range(app.rows):
         app.board[row].extend(newBoard[row])
-        
+    app.rows,app.cols = len(app.board),len(app.board[0])
+    app.completeWidth,app.completeHeight = getFullTerrain(app)
 
 
 def updateFruits(app):
@@ -723,7 +817,7 @@ def drawStartScreen(app,canvas):
     titleWidth = 600
     titleHeight = 150
     canvas.create_rectangle(titleX0,titleY0,titleX0+titleWidth,
-                            titleY0+titleHeight)
+                            titleY0+titleHeight,width=2)
     canvas.create_text(titleX0+(titleWidth/2),titleY0+(titleHeight/2),
                 text='GENTLE GARDEN',font='Courier 50 bold italic',fill='black')
     
@@ -824,7 +918,6 @@ def openFile(app):
         app.tomatoes,app.blackSeeds,app.blackberries,app.currTemp,app.level,
         app.terrain,app.board) = pickle.load(f)
 
-
 ###################
 
 ####################
@@ -863,10 +956,13 @@ def nightMode_redrawAll(app,canvas):
 #################
 
 def redrawAll(app,canvas):
-
     drawTerrain(app,canvas)
-    drawChar(app,canvas)
+    # drawChar(app,canvas)
     drawMenuHead(app,canvas)
+
+    spriteImage = app.sprites[app.direction][app.spriteCounter]
+    canvas.create_image(app.charX + app.cameraOffsetX,
+        app.charY,image=ImageTk.PhotoImage(spriteImage))
 
     if app.openInventory:
         drawInventory(app,canvas)
@@ -878,6 +974,9 @@ def redrawAll(app,canvas):
         drawStopWater(app,canvas)
     elif app.isHarvest:
         drawStopHarvest(app,canvas)
+
+
+   
 
     
 def drawStopHarvest(app,canvas):
@@ -902,7 +1001,7 @@ def drawStopRemove(app,canvas):
 
 
 def drawTerrain(app,canvas):
-    for row in range(app.rows):
+    for row in range(app.displayRows[1]):
         for col in range(app.cols):
             color = getTerrainColor(app,app.board[row][col])
             x0 = col*app.cellSize
@@ -1008,7 +1107,8 @@ def drawChar(app,canvas):
 
 
 def drawMenuHead(app,canvas):
-    canvas.create_rectangle(0,0,app.exitWidth,app.exitHeight)
+    canvas.create_rectangle(0,0,app.exitWidth,app.exitHeight,
+        fill='#bcdba2',width=2)
     canvas.create_text(app.exitWidth/2,app.exitHeight/2,text='exit')
     menuItems = ["Inventory","Plant","Water","Harvest"]
     for i in range(4):
@@ -1016,14 +1116,14 @@ def drawMenuHead(app,canvas):
         x1 = x0 + app.menuButtonWidth
         y0 = 0
         y1 = app.menuButtonHeight
-        canvas.create_rectangle(x0,y0,x1,y1)
+        canvas.create_rectangle(x0,y0,x1,y1,fill='#bcdba2',width=2)
         canvas.create_text(x0+app.menuButtonWidth/2,y1/2,text=menuItems[i])
     
     timeX0 = 700
     timeX1 = timeX0 + app.menuButtonWidth
     timeY0 = 0
     timeY1 = timeY0 + app.menuButtonHeight
-    canvas.create_rectangle(timeX0,timeY0,timeX1,timeY1)
+    canvas.create_rectangle(timeX0,timeY0,timeX1,timeY1,fill='#bcdba2',width=2)
     day = 'Day ' + str(app.day)
     level = 'Lvl ' + str(app.level)
     canvas.create_text(timeX0+app.menuButtonWidth/2,
@@ -1035,7 +1135,7 @@ def drawMenuHead(app,canvas):
     tempX1 = tempX0 + app.menuButtonWidth
     tempY0 = 0
     tempY1 = tempY0 + app.menuButtonHeight
-    canvas.create_rectangle(tempX0,tempY0,tempX1,tempY1)
+    canvas.create_rectangle(tempX0,tempY0,tempX1,tempY1,fill='#bcdba2',width=3)
     tempStr = str(app.currTemp) + 'F'
     canvas.create_text(tempX0+app.menuButtonWidth/2,tempY1/2,
         text=tempStr)
