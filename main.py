@@ -2,6 +2,7 @@ from cmu_112_graphics import *
 from PIL import Image
 import pygame # for sound only
 import pickle
+import copy
 from plant import *
 from terrain import *
 from helper import *
@@ -18,10 +19,9 @@ from pathfinding import *
 # pickling guide/helps
 # https://ianlondon.github.io/blog/pickling-basics/
 # https://stackoverflow.com/questions/6568007/how-do-i-save-and-restore-multiple-variables-in-python
-# sprite imaging crop code and move player from 112 mini-lecture on PIL and images
+# sprite imaging crop and move player adapted from 112 mini-lecture on PIL and images
 # https://scs.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=8a3ab4e2-c322-4f04-86e1-ae6a014ddc64
-# cached photo image code from cmu 112 animations pt 4 notes
-# https://www.cs.cmu.edu/~112/notes/notes-animations-part4.html
+
 # all art by me
 
 def appStarted(app):
@@ -389,6 +389,7 @@ def appStarted(app):
     app.maxTemp = 100
 
     app.level = 1
+    app.oldLevel = 0
 
     # dictionary mapping level to generated terrain
     app.terrain = makeTerrain(app)
@@ -406,7 +407,6 @@ def appStarted(app):
     app.walkBoxX0,app.walkBoxX1 = (200,700)
 
     app.charX,app.charY = (400,450)
-    app.charWidth,app.charHeight = (10,15)
     app.spriteCounter = 0
     app.cameraOffsetX = 0
     app.direction = 'Down'
@@ -445,13 +445,8 @@ def spriteCrop(app):
 def updateDisplay(app):
     if app.level>1:
         dcol = app.cameraOffsetX // app.cellSize
-        if dcol<0:
-            app.displayCols[0] -= dcol
-            app.displayCols[1] -= dcol
-        elif dcol>0:
-            app.displayCols[0] += dcol
-            app.displayCols[1] += dcol
-
+        app.displayCols[0] += dcol
+        app.displayCols[1] += dcol
 
 def timerFired(app):
     # TEMP if 10 seconds pass, move on
@@ -464,6 +459,7 @@ def timerFired(app):
         checkForGrowth(app)
         totalPlants =  (len(app.allSeedClasses) + len(app.allPlantClasses))
         newLevel = totalPlants//5 + 1
+        app.oldLevel = app.level
         if newLevel > app.level:
             levelUp(app)
             app.level = newLevel
@@ -479,6 +475,7 @@ def makeTerrain(app):
     return getClosestSeeds(voronoiPoints,app.width,gameHeight)
 
 def updateBoard(terrain,board):
+    # makes terrain representative on board with numbers
     terrains = [0,1,2,3,4]
     colorPairs = []
     i = 0
@@ -496,31 +493,38 @@ def updateBoard(terrain,board):
             board[row][col] = terrainType
     return board
 
-
-def moveCamera(app,dx):
-    if (app.level>1 and (app.charX > app.width-app.walkBoxX0) and 
-        app.direction=='Right') or \
-        ((app.charX < app.walkBoxX0) and 
-        (app.direction=='Left')):
-        app.cameraOffsetX = dx
-
-    updateDisplay(app)
-
 def movePlayer(app,dy,dx):
     app.spriteCounter = (app.spriteCounter + 1)%4
     app.charX += dx
     app.charY += dy
 
-    if (app.level>1):
-        if (app.charX <= app.walkBoxX0 or app.charX>=app.walkBoxX1):
-            if app.displayCols[0]!=0 or app.displayCols[1]!=app.cols:
+    if (app.level>1 and ((app.charX <= app.walkBoxX0 and app.direction=='Left') or 
+        (app.charX>=app.walkBoxX1 and app.direction=='Right'))):
+    
+        if ((app.displayCols[0]==0 and app.direction=='Left') or 
+            (app.displayCols[1]==app.cols and app.direction=='Right')):
+            # if traveling towards edge and reach the end
+            app.cameraOffsetX = 0
+            if (app.charX<=5 or app.charX>app.width-10):
                 app.charX -= dx
-                moveCamera(app,dx)
-    if (app.charX<=5 or app.charX>app.width-10):
-        app.charX -= dx
-    if (app.charY < app.menuButtonHeight + 10 or 
-        app.charY+30 > app.height):
-        app.charY -= dy
+            if (app.charY < app.menuButtonHeight + 10 or 
+                app.charY+30 > app.height):
+                app.charY -= dy
+
+        elif ((app.displayCols[0]==0 and app.displayCols[1]!=app.cols) or 
+            (app.displayCols[0]!=0 and app.displayCols[1]==app.cols) or 
+            (app.displayCols[0]!=0 and app.displayCols[0]!=0)):
+            # if display cols are not the edges of the screen
+            app.charX -= dx
+            app.cameraOffsetX = dx
+            updateDisplay(app)
+
+    else:
+        if (app.charX<=5 or app.charX>app.width-10):
+            app.charX -= dx
+        if (app.charY < app.menuButtonHeight + 10 or 
+            app.charY+30 > app.height):
+            app.charY -= dy
     
     
 def keyPressed(app,event):
@@ -558,7 +562,8 @@ def keyPressed(app,event):
         app.isPlanting = True
 
 def getCoord(app,row,col):
-    x0 =  col * app.cellSize
+    offset = app.displayCols[0]*app.cellSize
+    x0 =  col * app.cellSize - offset
     y0 = row * app.cellSize + app.menuButtonHeight
     return (x0, y0)
 
@@ -722,8 +727,9 @@ def levelUp(app):
     newBoard = updateBoard(newTerrain,newBoard)
 
     for row in range(app.rows):
-        app.board[row]+=(newBoard[row])
+        app.board[row] += newBoard[row]
     app.rows,app.cols = len(app.board),len(app.board[0])
+
     app.completeWidth,app.completeHeight = getFullTerrain(app)
 
 
@@ -956,7 +962,7 @@ def isLegalPlant(app,row,col,plantType,terrainType1,terrainType2):
 
 def getBoardRowCol(app,x,y):
     row = int((y - app.menuButtonHeight) / app.cellSize)
-    col = int(x / app.cellSize)
+    col = int(x / app.cellSize) + app.displayCols[0]
     return (row,col)
 
 
@@ -1019,7 +1025,7 @@ def checkForGrowth(app):
             # fruiting
             app.board[row][col] = plant.type
             if plant.numFruits==0:
-                plant.growMoreFruit()
+                plant.growFruit()
 
 
     removing = []
@@ -1137,12 +1143,14 @@ def updateTemp(app):
     app.currTemp = newTemp
 
 def saveFile(app):
+    
     saveItems = (app.day,app.width,app.height,app.invItems,app.seedInv,
         app.treePoints,app.plantPoints,app.allSeedClasses,app.allPlantClasses,
         app.appleSeeds,app.apples,app.peachSeeds,app.peaches,app.lemonSeeds,
         app.lemons,app.strawbSeeds,app.strawberries,app.tomatoSeeds,
         app.tomatoes,app.blackbSeeds,app.blackberries,app.currTemp,app.level,
-        app.terrain,app.board,app.displayRows,app.displayCols,app.spriteCounter,app.cameraOffsetX)
+        app.board,app.rows,app.cols,app.displayRows,app.displayCols,app.spriteCounter,
+        app.cameraOffsetX)
     f = open('gamestate.pickle','wb')
     pickle.dump(saveItems,f)
     f.close()
@@ -1153,8 +1161,10 @@ def openFile(app):
         app.treePoints,app.plantPoints,app.allSeedClasses,app.allPlantClasses,
         app.appleSeeds,app.apples,app.peachSeeds,app.peaches,app.lemonSeeds,
         app.lemons,app.strawbSeeds,app.strawberries,app.tomatoSeeds,
-        app.tomatoes,app.blackSeeds,app.blackberries,app.currTemp,app.level,
-        app.terrain,app.board,app.displayRows,app.displayCols,app.spriteCounter,app.cameraOffsetX) = pickle.load(f)
+        app.tomatoes,app.blackbSeeds,app.blackberries,app.currTemp,app.level,
+        app.board,app.rows,app.cols,app.displayRows,app.displayCols,app.spriteCounter,
+        app.cameraOffsetX) = pickle.load(f)
+    f.close()
 
 ###################
 
@@ -1168,6 +1178,8 @@ def nightMode_timerFired(app):
         updateTemp(app)
         app.day += 1
         app.isHome = False
+        if app.level > app.oldLevel:
+            app.charX,app.charY = (400,450)
         app.mode = None
         app.timeElapsed = 0
 
@@ -1257,10 +1269,11 @@ def drawStopRemove(app,canvas):
 
 def drawTerrain(app,canvas):
     images = []
+    offset = app.displayCols[0]*app.cellSize
     for row in range(app.displayRows[1]):
-        for col in range(app.cols):
+        for col in range(app.displayCols[0],app.displayCols[1]):
             color = getTerrainColor(app,row,col)
-            x0 = col*app.cellSize
+            x0 = col*app.cellSize - offset
             y0 = row*app.cellSize + app.menuButtonHeight
             x1 = x0 + app.cellSize
             y1 = y0 + app.cellSize + app.menuButtonHeight
