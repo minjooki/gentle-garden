@@ -90,9 +90,13 @@ def appStarted(app):
     app.waterStopWidth,app.waterStopHeight = (90,30)
     app.isWatering = False
 
-    app.homeRow,app.homeCol = (20,0)
+    app.homeRow,app.homeCol = (0,0)
     app.pathHome = None
     app.graph = None
+    app.goHome = False
+    app.isHome = False
+    app.homeOkX0,app.homeOkY0 = 600,65
+    app.homeOkWidth,app.homeOkHeight = (100,15)
 
     app.plantingSide = ((app.plantingX1-app.plantingX0)-(app.plantingSlot*3))/4
     app.plantingTop = ((app.plantingY1-app.plantingY0)-(app.plantingSlot*2))/3
@@ -439,20 +443,24 @@ def spriteCrop(app):
         app.sprites[newDir] = tempSprites
 
 def updateDisplay(app):
-    dcol = app.cameraOffsetX // app.cellSize
-    if dcol<0:
-        app.displayCols[0] -= dcol
-        app.displayCols[1] -= dcol
-    elif dcol>0:
-        app.displayCols[0] += 1
-        app.displayCols[1] += 1
+    if app.level>1:
+        dcol = app.cameraOffsetX // app.cellSize
+        if dcol<0:
+            app.displayCols[0] -= dcol
+            app.displayCols[1] -= dcol
+        elif dcol>0:
+            app.displayCols[0] += dcol
+            app.displayCols[1] += dcol
 
 
 def timerFired(app):
     # TEMP if 10 seconds pass, move on
-    app.timeElapsed += 10
+    app.timeElapsed += 10  
+        
     if (app.mode!='exitMode' and app.mode!='startMode' and app.mode!='nightMode'
-         and app.timeElapsed >= 800):
+         and app.timeElapsed >= 600) or (app.isHome):
+         # check of everything (growth, level) at night
+        app.goHome = False
         checkForGrowth(app)
         totalPlants =  (len(app.allSeedClasses) + len(app.allPlantClasses))
         newLevel = totalPlants//5 + 1
@@ -487,26 +495,14 @@ def updateBoard(terrain,board):
         for (row,col) in terrain[seed]:
             board[row][col] = terrainType
     return board
-  
 
-def isLegalMove(app,dx,dy):
-    # is moving character legal
-    tempX = app.charX + dx
-    tempY = app.charY + dy
-    if (tempX-(app.charWidth/2)<0 or tempX+(app.charWidth/2)>app.width or 
-        tempY-(app.charHeight/2)<0 or tempY+(app.charHeight/2)>app.height):
-        return False
-    return True
 
 def moveCamera(app,dx):
-    if ((app.charX > app.width-app.walkBoxX0-app.cameraOffsetX) and 
+    if (app.level>1 and (app.charX > app.width-app.walkBoxX0) and 
         app.direction=='Right') or \
-        ((app.charX < -app.cameraOffsetX+app.walkBoxX0) and 
+        ((app.charX < app.walkBoxX0) and 
         (app.direction=='Left')):
-        app.cameraOffsetX -= dx
-    
-    if (app.cameraOffsetX>0 or app.cameraOffsetX<-(app.completeWidth-app.width)):
-        app.cameraOffsetX += dx
+        app.cameraOffsetX = dx
 
     updateDisplay(app)
 
@@ -515,52 +511,51 @@ def movePlayer(app,dy,dx):
     app.charX += dx
     app.charY += dy
 
-    if (app.charX < app.walkBoxX0 or 
-        app.charX > (app.completeWidth-app.walkBoxX0)):
+    if (app.level>1):
+        if (app.charX <= app.walkBoxX0 or app.charX>=app.walkBoxX1):
+            if app.displayCols[0]!=0 or app.displayCols[1]!=app.cols:
+                app.charX -= dx
+                moveCamera(app,dx)
+    if (app.charX<=5 or app.charX>app.width-10):
         app.charX -= dx
     if (app.charY < app.menuButtonHeight + 10 or 
-        app.charY > app.completeHeight):
+        app.charY+30 > app.height):
         app.charY -= dy
     
-    moveCamera(app,dx)
-
+    
 def keyPressed(app,event):
     dy,dx = 0,0
     if event.key == 'Up':
-        dy = -15
+        dy = -10
         app.direction = 'Up'
         movePlayer(app,dy,dx)
     elif event.key == 'Down':
         app.direction = 'Down'
-        dy = +15
+        dy = +10
         movePlayer(app,dy,dx)
     elif event.key == 'Right':
         app.direction = 'Right'
-        dx = +15
+        dx = +10
         movePlayer(app,dy,dx)
     elif event.key == 'Left':
         app.direction = 'Left'
-        dx = -15
+        dx = -10
         movePlayer(app,dy,dx)
-
-    if event.key=='H' or event.key=='h':
+    
+    if event.key in {'H','h'}:
         app.graph = makeGraphFromBoard(app.board)
-        (startRow,startCol) = getBoardRowCol(app,app.charX,app.charY)
+        startRow,startCol = getBoardRowCol(app,app.charX,app.charY)
         start = (startRow,startCol)
         target = (app.homeRow,app.homeCol)
         app.pathHome = dijkstra(app.graph,start,target)
-        goHome(app)
+        app.goHome = True
+        app.isHome = False
+        app.timeElapsed = 0
 
     # use enter key to pick seed and start planting
     if app.openPlanting and app.currSeed!=None and event.key=='Enter':
         app.openPlanting = False
         app.isPlanting = True
-
-def goHome(app):
-    for (row,col) in app.pathHome:
-        newX,newY = getCoord(app,row,col)
-        app.charX = newX
-        app.charY = newY
 
 def getCoord(app,row,col):
     x0 =  col * app.cellSize
@@ -667,7 +662,7 @@ def mousePressed(app,event):
 
         if app.board[row][col] in (50,51,52,53,54,55,56):
             removeTree(app,row,col)
-        elif app.board[row][col] in (30,31,32,33,34,35,36):
+        elif app.board[row][col] in (60,61,62,63,64,65,66):
             removePlant(app,row,col)
         elif clickedOn(app.cx,app.cy,app.stopRemoveX0,app.stopRemoveY0,
             app.stopRemoveWidth,app.stopRemoveHeight):
@@ -705,17 +700,20 @@ def mousePressed(app,event):
         app.isHarvest = False
     
     if app.isHarvest:
+        # update fruit and seeds from harvest
         (row,col) = getBoardRowCol(app,app.cx,app.cy)
 
         if (row,col) in app.allPlantClasses:
             plant = app.allPlantClasses[(row,col)]
             if plant.stage==7 and plant.numFruits > 0:
                 plant.pickFruit()
-
-                print(plant.numFruits)
-
                 fruit = plant.type
                 updateFruits(app,fruit)
+    
+    if app.goHome and app.isHome==False:
+        if clickedOn(app.cx,app.cy,app.homeOkX0,app.homeOkY0,
+            app.homeOkWidth,app.homeOkHeight):
+            app.isHome = True
 
 
 def levelUp(app):
@@ -724,12 +722,12 @@ def levelUp(app):
     newBoard = updateBoard(newTerrain,newBoard)
 
     for row in range(app.rows):
-        app.board[row].extend(newBoard[row])
+        app.board[row]+=(newBoard[row])
     app.rows,app.cols = len(app.board),len(app.board[0])
     app.completeWidth,app.completeHeight = getFullTerrain(app)
 
 
-def updateFruits(app):
+def updateFruitInv(app):
     app.invItems[0][0][1] = app.apples
     app.invItems[0][1][1] = app.peaches
     app.invItems[0][2][1] = app.lemons
@@ -749,14 +747,14 @@ def updateFruits(app,type):
         app.lemonSeeds += 1
     elif type=='strawb':
         app.strawberries += 1
-        app.strawbseeds += 1
+        app.strawbSeeds += 1
     elif type=='tomato':
         app.tomatoes += 1
         app.tomatoSeeds += 1
     elif type=='blackb':
         app.blackberries += 1
-        app.blackb += 1
-    updateFruits(app)
+        app.blackbSeeds += 1
+    updateFruitInv(app)
 
 def changeWaterLevel(app,row,col,watering):
     # change water and change soil
@@ -846,9 +844,10 @@ def removeTree(app,row,col):
             elif treeType == 'lemon':
                 app.lemonSeeds += 1
     if (row,col) in app.allSeedClasses:
-        app.allSeedClasses.remove((row,col))
+        app.allSeedClasses.pop((row,col))
     elif (row,col) in app.allPlantClasses:
-        app.allPlantClasses.remove((row,col))
+        app.allPlantClasses.pop((row,col))
+    updateSeeds(app)
 
 def removePlant(app,row,col):
     for drow in range(-2,1):
@@ -866,9 +865,11 @@ def removePlant(app,row,col):
             elif plantType == 'blackb':
                 app.blackbSeeds += 1
     if (row,col) in app.allSeedClasses:
-        app.allSeedClasses.remove((row,col))
+        app.allSeedClasses.pop((row,col))
     elif (row,col) in app.allPlantClasses:
-        app.allPlantClasses.remove((row,col))
+        app.allPlantClasses.pop((row,col))
+    updateSeeds(app)
+
 
 
 def updateSeedInv(app):
@@ -916,7 +917,7 @@ def plantOnBoard(app,row,col,plantType):
             newRow = row + drow
             newCol = col + dcol
             if ((drow == +1) and (dcol==0)):
-                app.board[newRow][newCol] = 30
+                app.board[newRow][newCol] = 60
             else:
                 app.board[newRow][newCol] = plantType
 
@@ -984,37 +985,35 @@ def checkForGrowth(app):
         plant.checkGrowth(plant.type)
         (row,col) = plant.coord
 
-        print(plant,plant.type,plant.stage,plant.growth)
-
         if plant.stage == 2:
             # if small plant/tree
-            if plant.type in ['apple','peach','lemon']:
+            if plant.type in {'apple','peach','lemon'}:
                 app.board[row][col] = 51
-            else:
+            elif plant.type in {'strawb','blackb','tomato'}:
                 app.board[row][col] = 61
         elif plant.stage == 3:
             # if med plant/tree
-            if plant.type in ['apple','peach','lemon']:
+            if plant.type in {'apple','peach','lemon'}:
                 app.board[row][col] = 52
-            else:
+            elif plant.type in {'strawb','blackb','tomato'}:
                 app.board[row][col] = 62
         elif plant.stage == 4:
             # if mature plant/tree
-            if plant.type in ['apple','peach','lemon']:
+            if plant.type in {'apple','peach','lemon'}:
                 app.board[row][col] = 53
-            else:
+            elif plant.type in {'strawb','blackb','tomato'}:
                 app.board[row][col] = 63
         elif plant.stage == 5:
             # flowering
-            if plant.type in ['apple','peach','lemon']:
+            if plant.type in {'apple','peach','lemon'}:
                 app.board[row][col] = 54
-            else:
+            elif plant.type in {'strawb','blackb','tomato'}:
                 app.board[row][col] = 64
         elif plant.stage == 6:
             # unripe
-            if plant.type in ['apple','peach','lemon']:
+            if plant.type in {'apple','peach','lemon'}:
                 app.board[row][col] = 55
-            else:
+            elif plant.type in {'strawb','blackb','tomato'}:
                 app.board[row][col] = 65
         elif plant.stage == 7:
             # fruiting
@@ -1143,7 +1142,7 @@ def saveFile(app):
         app.appleSeeds,app.apples,app.peachSeeds,app.peaches,app.lemonSeeds,
         app.lemons,app.strawbSeeds,app.strawberries,app.tomatoSeeds,
         app.tomatoes,app.blackbSeeds,app.blackberries,app.currTemp,app.level,
-        app.terrain,app.board)
+        app.terrain,app.board,app.displayRows,app.displayCols,app.spriteCounter,app.cameraOffsetX)
     f = open('gamestate.pickle','wb')
     pickle.dump(saveItems,f)
     f.close()
@@ -1155,7 +1154,7 @@ def openFile(app):
         app.appleSeeds,app.apples,app.peachSeeds,app.peaches,app.lemonSeeds,
         app.lemons,app.strawbSeeds,app.strawberries,app.tomatoSeeds,
         app.tomatoes,app.blackSeeds,app.blackberries,app.currTemp,app.level,
-        app.terrain,app.board) = pickle.load(f)
+        app.terrain,app.board,app.displayRows,app.displayCols,app.spriteCounter,app.cameraOffsetX) = pickle.load(f)
 
 ###################
 
@@ -1166,10 +1165,11 @@ def openFile(app):
 def nightMode_timerFired(app):
     app.timeElapsed += 10
     if app.timeElapsed >= 500:
-        app.timeElapsed = 0
         updateTemp(app)
         app.day += 1
+        app.isHome = False
         app.mode = None
+        app.timeElapsed = 0
 
 def nightMode_reduceWater(app):
     # decrease water level each night so user must water again when needed
@@ -1196,11 +1196,10 @@ def nightMode_redrawAll(app,canvas):
 
 def redrawAll(app,canvas):
     drawTerrain(app,canvas)
-    # drawChar(app,canvas)
     drawMenuHead(app,canvas)
 
     spriteImage = app.sprites[app.direction][app.spriteCounter]
-    canvas.create_image(app.charX + app.cameraOffsetX,
+    canvas.create_image(app.charX,
         app.charY,image=ImageTk.PhotoImage(spriteImage))
 
     if app.openInventory:
@@ -1214,25 +1213,46 @@ def redrawAll(app,canvas):
     elif app.isHarvest:
         drawStopHarvest(app,canvas)
     
+    if app.goHome:
+        drawGoHome(app,canvas)
+
+def drawGoHome(app,canvas):
+
+    for (row,col) in app.pathHome:
+        x0,y0 = getCoord(app,row,col)
+
+        canvas.create_rectangle(x0,y0,x0+app.cellSize,y0+app.cellSize,
+                fill='#ffd9ee')
+    canvas.create_rectangle(300,10,700,80,fill='white')
+    canvas.create_text(500,30,text="it's the end of the day!",font='Courier 12')
+    canvas.create_text(500,40,text="here is the path you will have taken to go home.",
+        font='Courier 12')
+    canvas.create_rectangle(app.homeOkX0,app.homeOkY0,
+        app.homeOkX0+app.homeOkWidth,app.homeOkY0+app.homeOkHeight)
+    canvas.create_text(app.homeOkX0+app.homeOkWidth/2,
+        app.homeOkY0+app.homeOkHeight/2,text='ok',font='Courier 13')
+    
 def drawStopHarvest(app,canvas):
     canvas.create_rectangle(app.harvestStopX0,app.harvestStopY0,
         app.harvestStopX0+app.harvestStopWidth,
         app.harvestStopY0+app.harvestStopHeight)
     canvas.create_text(app.harvestStopX0+app.harvestStopWidth/2,
-        app.harvestStopY0+app.harvestStopHeight/2,text='finish harvest')
+        app.harvestStopY0+app.harvestStopHeight/2,text='finish harvest',
+            font='Courier 10')
 
 def drawStopWater(app,canvas):
     canvas.create_rectangle(app.waterStopX0,app.waterStopY0,
         app.waterStopX0+app.waterStopWidth,app.waterStopY0+app.waterStopHeight)
     canvas.create_text(app.waterStopX0+app.waterStopWidth/2,
-        app.waterStopY0+app.waterStopHeight/2,text='finish watering')
+        app.waterStopY0+app.waterStopHeight/2,text='finish watering',
+            font='Courier 10')
 
 def drawStopRemove(app,canvas):
     canvas.create_rectangle(app.stopRemoveX0,app.stopRemoveY0,
         app.stopRemoveX0+app.stopRemoveWidth,  
         app.stopRemoveY0+app.stopRemoveHeight)
     canvas.create_text(app.stopRemoveX0+app.stopRemoveWidth/2,
-        app.stopRemoveY0+app.stopRemoveHeight/2,text='finish')
+        app.stopRemoveY0+app.stopRemoveHeight/2,text='finish',font='Courier')
 
 
 def drawTerrain(app,canvas):
@@ -1383,6 +1403,8 @@ def getImage(app,imagePair):
             return app.tomato3
         elif stage==4:
             return app.tomato4
+        elif stage==5:
+            return app.tomato5
     elif plantType=='blackb':
         if stage=='sprout':
             return app.blackbSprout
@@ -1459,31 +1481,31 @@ def getTerrainColor(app,row,col):
     # TEMP planted plant seed
     elif terrainNum==6:
         return rgbString(0,255,127)
-    elif terrainNum==30:
+    elif terrainNum==60:
         # plant sprout
         plant = getPlantType(app,row,col)
         return (plant,'sprout')
-    elif terrainNum==31:
+    elif terrainNum==61:
         # small plant
         plant = getPlantType(app,row,col)
         return (plant,'small')
-    elif terrainNum==32:
+    elif terrainNum==62:
         # medium plant 
         plant = getPlantType(app,row,col)
         return (plant,'med')
-    elif terrainNum==33:
+    elif terrainNum==63:
         # mature plant
         plant = getPlantType(app,row,col)
         return (plant,'mat')
-    elif terrainNum==34:
+    elif terrainNum==64:
         # flowers
         plant = getPlantType(app,row,col)
         return (plant,'flower')
-    elif terrainNum==35:
+    elif terrainNum==65:
         # unripe
         plant = getPlantType(app,row,col)
         return (plant,'unripe')
-    elif terrainNum==36:
+    elif terrainNum==66:
         # fruit
         plant = getPlantType(app,row,col)
         return (plant,'fruit')
@@ -1535,38 +1557,33 @@ def getPlantType(app,row,col):
         plant = app.allSeedClasses[(row,col)]
         return plant.type
 
-def drawChar(app,canvas):
-    x0 = app.charX - app.charWidth/2
-    y0 = app.charY - app.charHeight/2
-    x1 = app.charX + app.charWidth/2
-    y1 = app.charY + app.charHeight/2
-    canvas.create_rectangle(x0,y0,x1,y1,fill="yellow")
-
 
 def drawMenuHead(app,canvas):
     canvas.create_rectangle(0,0,app.exitWidth,app.exitHeight,
         fill='#bcdba2',width=2)
-    canvas.create_text(app.exitWidth/2,app.exitHeight/2,text='exit')
-    menuItems = ["Inventory","Plant","Water","Harvest"]
+    canvas.create_text(app.exitWidth/2,app.exitHeight/2,text='exit',
+        font='Courier')
+    menuItems = ["inventory","plant","water","harvest"]
     for i in range(4):
         x0 = i*100 + app.exitWidth
         x1 = x0 + app.menuButtonWidth
         y0 = 0
         y1 = app.menuButtonHeight
         canvas.create_rectangle(x0,y0,x1,y1,fill='#bcdba2',width=2)
-        canvas.create_text(x0+app.menuButtonWidth/2,y1/2,text=menuItems[i])
+        canvas.create_text(x0+app.menuButtonWidth/2,y1/2,text=menuItems[i],
+            font='Courier')
     
     timeX0 = 700
     timeX1 = timeX0 + app.menuButtonWidth
     timeY0 = 0
     timeY1 = timeY0 + app.menuButtonHeight
     canvas.create_rectangle(timeX0,timeY0,timeX1,timeY1,fill='#bcdba2',width=2)
-    day = 'Day ' + str(app.day)
-    level = 'Lvl ' + str(app.level)
+    day = 'day ' + str(app.day)
+    level = 'lvl ' + str(app.level)
     canvas.create_text(timeX0+app.menuButtonWidth/2,
-                            timeY1/3,text=day)
+                            timeY1/3,text=day,font='Courier')
     canvas.create_text(timeX0+app.menuButtonWidth/2,
-                            timeY1/3*2,text=level)
+                            timeY1/3*2,text=level,font='Courier')
 
     tempX0 = 800
     tempX1 = tempX0 + app.menuButtonWidth
@@ -1575,7 +1592,7 @@ def drawMenuHead(app,canvas):
     canvas.create_rectangle(tempX0,tempY0,tempX1,tempY1,fill='#bcdba2',width=3)
     tempStr = str(app.currTemp) + 'F'
     canvas.create_text(tempX0+app.menuButtonWidth/2,tempY1/2,
-        text=tempStr)
+        text=tempStr,font='Courier')
 
 
 def drawInventory(app,canvas):
@@ -1583,7 +1600,7 @@ def drawInventory(app,canvas):
     canvas.create_rectangle(app.plantingX0,app.plantingY0,
         app.plantingX1,app.plantingY1,fill='white')
     canvas.create_text(app.plantingX1-app.closePlantingHeight/2,
-            app.plantingY0+app.closePlantingHeight/2,text='X')
+            app.plantingY0+app.closePlantingHeight/2,text='X',font='Courier')
     for j in range(2):
         for i in range(3):
             colX0 = (app.plantingX0+app.plantingSlot*i + app.plantingSide*(i+1))
@@ -1592,7 +1609,7 @@ def drawInventory(app,canvas):
             itemName = app.invItems[j][i][0]
             itemCount = app.invItems[j][i][1]
             canvas.create_text(colX0+app.plantingSlot/2,
-                colY0,text=itemName+' '+str(itemCount))
+                colY0,text=itemName+' '+str(itemCount),font='Courier')
             image = app.invImages[j][i]
             canvas.create_image(colX0+app.plantingSlot/2,
                 colY0+app.plantingSlot/2,image=ImageTk.PhotoImage(image))
@@ -1603,26 +1620,25 @@ def drawPlanting(app,canvas):
     canvas.create_rectangle(app.plantingX0,app.plantingY0,
                             app.plantingX1,app.plantingY1,fill="white")
     canvas.create_text(app.plantingX1-app.closePlantingHeight/2,
-                    app.plantingY0+app.closePlantingHeight/2,text="X")
+            app.plantingY0+app.closePlantingHeight/2,text="X",font='Courier')
     
     for j in range(2):
         for i in range(3):
             colX0 = (app.plantingX0+app.plantingSlot*i + app.plantingSide*(i+1))
             colY0 = (app.plantingY0+ app.plantingSlot*j + app.plantingTop*(j+1))
-            canvas.create_rectangle(colX0,colY0,colX0+app.plantingSlot,
-                colY0+app.plantingSlot)
             
             seedName = app.seedInv[j][i][0]
             seedCount = app.seedInv[j][i][1]
             canvas.create_text(colX0+app.plantingSlot/2,
-                colY0+app.plantingSlot/2,text=seedName+' '+str(seedCount))
+                colY0+app.plantingSlot/2,text=seedName+': '+str(seedCount),
+                font='Courier 12')
     
     canvas.create_rectangle(app.unplantX0,app.unplantY0,
         app.unplantX0+app.unplantWidth,app.unplantY0+app.unplantHeight)
     canvas.create_text(app.unplantX0+app.unplantWidth/2,
-        app.unplantY0+app.unplantHeight/2,text='remove plants')
+        app.unplantY0+app.unplantHeight/2,text='remove plants',font='Courier 12')
     canvas.create_text(app.plantingX0+(app.plantingX1-app.plantingX0)/2,
         app.plantingY0+20,
-        text='select seed to plant and press enter to plant!')
+        text='select seed to plant and press enter to plant!',font='Courier')
 
 runApp(width=900,height=700)
