@@ -40,6 +40,8 @@ class NewPlant:
     def waterOvernight(self):
         # plant loses water status at night
         self.waterLevel -= 2
+        if self.waterLevel <= -4:
+            self.waterLevel = -4
         self.updateWaterStatus()
 
     def waterPlant(self):
