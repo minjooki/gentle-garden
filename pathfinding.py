@@ -17,6 +17,7 @@ from cmu_112_graphics import *
 #   any planted plot = 12
 
 def makeGraphFromBoard(board):
+    # construct graph from given board (2d list)
     graph = {}
     rows = len(board)
     cols = len(board[0])
@@ -27,6 +28,7 @@ def makeGraphFromBoard(board):
     return graph
 
 def getNeighbors(board,row,col):
+    # check up, down, left, right directions for neighbors and weights
     neighbors = []
     for (drow,dcol) in [(-1,0),(+1,0),(0,-1),(0,+1)]:
         newRow = row + drow
@@ -58,6 +60,7 @@ def getNeighbors(board,row,col):
 
 
 def dijkstra(graph,start,target):
+    # loop through not visited values and neighbors to find the shortest/least weighted paths
     notVisited = allNodesInGraph(graph) # all unvisited nodes (all at first)
     visited = set()
     distances = {start:0} # maps distance from source to vertex
@@ -123,6 +126,7 @@ def isNeighbor(graph,vertex,neighbor):
     return False
 
 def getEdges(graph,vertex,neighbor):
+    # get edges given vertex and neighbor
     for neighborPair in graph[vertex]:
         if neighborPair[0]==neighbor:
             return neighborPair[1]
