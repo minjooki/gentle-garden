@@ -6,6 +6,7 @@ def rgbString(r, g, b):
     return f'#{r:02x}{g:02x}{b:02x}'
 
 def clickedOn(cx,cy,x0,y0,width,height):
+    # checks if clicked within bounds
     x1 = x0 + width
     y1 = y0 + height
 
