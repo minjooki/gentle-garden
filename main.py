@@ -678,6 +678,9 @@ def mousePressed(app,event):
                 updateSeeds(app)
 
     if app.openPlanting==False and app.removingPlants:
+        app.isWatering = False
+        app.isPlanting = False
+        app.isHarvest = False
         # remove plants
         (row,col) = getBoardRowCol(app,app.cx,app.cy)
 
@@ -690,14 +693,16 @@ def mousePressed(app,event):
             app.removingPlants = False
 
     # water plants
-    if (app.isPlanting==False and app.removingPlants==False and 
+    if (app.isPlanting==False and 
         clickedOn(app.cx,app.cy,app.waterStartX0,app.waterStartY0,
             app.waterStartWidth,app.waterStartHeight)):
+        app.removingPlants = False
         app.isWatering = True
         app.openPlanting = False
         app.currSeed = None
         app.isPlanting = False
         app.openInventory = None
+        app.isHarvest = False
     
     elif clickedOn(app.cx,app.cy,app.waterStopX0,app.waterStopY0,
         app.waterStopWidth,app.waterStopHeight) and app.isWatering:
