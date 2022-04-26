@@ -30,7 +30,7 @@ from bgm import *
 def appStarted(app):
     
     pygame.mixer.init()
-    app.sound = Sound("CozyPlace.mp3")
+    app.sound = Sound("design-components/CozyPlace.mp3")
     app.sound.start()
 
     app.timeElapsed = 0
@@ -147,241 +147,241 @@ def appStarted(app):
     app.blackbSeedInvY0 = (app.plantingY0+app.plantingSlot+app.plantingTop*2)
 
     # BLACKBERRIES
-    app.blackb = app.loadImage('blackb.png')
+    app.blackb = app.loadImage('design-components/blackb.png')
     app.blackb = app.scaleImage(app.blackb,5)
 
-    app.blackbSprout = app.loadImage('blackbsprout.png')
+    app.blackbSprout = app.loadImage('design-components/blackbsprout.png')
     app.blackbSprout = app.scaleImage(app.blackbSprout,3)
 
-    app.blackbSmall = app.loadImage('blackbSmall.png')
+    app.blackbSmall = app.loadImage('design-components/blackbSmall.png')
     app.blackbSmall = app.scaleImage(app.blackbSmall,3)
 
-    app.blackbMed = app.loadImage('blackbMed.png')
+    app.blackbMed = app.loadImage('design-components/blackbMed.png')
     app.blackbMed = app.scaleImage(app.blackbMed,3)
 
-    app.blackbMat = app.loadImage('blackbMat.png')
+    app.blackbMat = app.loadImage('design-components/blackbMat.png')
     app.blackbMat = app.scaleImage(app.blackbMat,3)
 
-    app.blackbFlower = app.loadImage('blackbFlower.png')
+    app.blackbFlower = app.loadImage('design-components/blackbFlower.png')
     app.blackbFlower = app.scaleImage(app.blackbFlower,3)
 
-    app.blackbUnripe = app.loadImage('blackbUnripe.png')
+    app.blackbUnripe = app.loadImage('design-components/blackbUnripe.png')
     app.blackbUnripe = app.scaleImage(app.blackbUnripe,3)
 
-    app.blackbFruit = app.loadImage('blackbFruit.png')
+    app.blackbFruit = app.loadImage('design-components/blackbFruit.png')
     app.blackbFruit = app.scaleImage(app.blackbFruit,3)
 
-    app.blackb1 = app.loadImage('blackb1.png')
+    app.blackb1 = app.loadImage('design-components/blackb1.png')
     app.blackb1 = app.scaleImage(app.blackb1,3)
 
-    app.blackb2 = app.loadImage('blackb2.png')
+    app.blackb2 = app.loadImage('design-components/blackb2.png')
     app.blackb2 = app.scaleImage(app.blackb2,3)
 
-    app.blackb3 = app.loadImage('blackb3.png')
+    app.blackb3 = app.loadImage('design-components/blackb3.png')
     app.blackb3 = app.scaleImage(app.blackb3,3)
 
-    app.blackb4 = app.loadImage('blackb4.png')
+    app.blackb4 = app.loadImage('design-components/blackb4.png')
     app.blackb4 = app.scaleImage(app.blackb4,3)
 
-    app.blackb5 = app.loadImage('blackb5.png')
+    app.blackb5 = app.loadImage('design-components/blackb5.png')
     app.blackb5 = app.scaleImage(app.blackb5,3)
 
-    app.blackb6 = app.loadImage('blackb6.png')
+    app.blackb6 = app.loadImage('design-components/blackb6.png')
     app.blackb6 = app.scaleImage(app.blackb6,3)
 
 ## strawberrries
-    app.strawb = app.loadImage('strawb.png')
+    app.strawb = app.loadImage('design-components/strawb.png')
     app.strawb = app.scaleImage(app.strawb,5)
 
-    app.strawbSprout = app.loadImage('strawbsprout.png')
+    app.strawbSprout = app.loadImage('design-components/strawbsprout.png')
     app.strawbSprout = app.scaleImage(app.strawbSprout,3)
 
-    app.strawbSmall = app.loadImage('strawbSmall.png')
+    app.strawbSmall = app.loadImage('design-components/strawbSmall.png')
     app.strawbSmall = app.scaleImage(app.strawbSmall,3)
 
-    app.strawbMed = app.loadImage('strawbMed.png')
+    app.strawbMed = app.loadImage('design-components/strawbMed.png')
     app.strawbMed = app.scaleImage(app.strawbMed,3)
 
-    app.strawbMat = app.loadImage('strawbMat.png')
+    app.strawbMat = app.loadImage('design-components/strawbMat.png')
     app.strawbMat = app.scaleImage(app.strawbMat,3)
 
-    app.strawbFlower = app.loadImage('strawbFlower.png')
+    app.strawbFlower = app.loadImage('design-components/strawbFlower.png')
     app.strawbFlower = app.scaleImage(app.strawbFlower,3)
 
-    app.strawbUnripe = app.loadImage('strawbUnripe.png')
+    app.strawbUnripe = app.loadImage('design-components/strawbUnripe.png')
     app.strawbUnripe = app.scaleImage(app.strawbUnripe,3)
 
-    app.strawbFruit = app.loadImage('strawbFruit.png')
+    app.strawbFruit = app.loadImage('design-components/strawbFruit.png')
     app.strawbFruit = app.scaleImage(app.strawbFruit,3)
 
-    app.strawb1 = app.loadImage('strawb1.png')
+    app.strawb1 = app.loadImage('design-components/strawb1.png')
     app.strawb1 = app.scaleImage(app.strawb1,3)
 
-    app.strawb2 = app.loadImage('strawb2.png')
+    app.strawb2 = app.loadImage('design-components/strawb2.png')
     app.strawb2 = app.scaleImage(app.strawb2,3)
 
-    app.strawb3 = app.loadImage('strawb3.png')
+    app.strawb3 = app.loadImage('design-components/strawb3.png')
     app.strawb3 = app.scaleImage(app.strawb3,3)
 
-    app.strawb4 = app.loadImage('strawb4.png')
+    app.strawb4 = app.loadImage('design-components/strawb4.png')
     app.strawb4 = app.scaleImage(app.strawb4,3)
 
-    app.strawb5 = app.loadImage('strawb5.png')
+    app.strawb5 = app.loadImage('design-components/strawb5.png')
     app.strawb5 = app.scaleImage(app.strawb5,3)
 
     ## Tomatoes
-    app.tomato = app.loadImage('tomato.png')
+    app.tomato = app.loadImage('design-components/tomato.png')
     app.tomato = app.scaleImage(app.tomato,5)
 
-    app.tomatoSprout = app.loadImage('tomatoSprout.png')
+    app.tomatoSprout = app.loadImage('design-components/tomatoSprout.png')
     app.tomatoSprout = app.scaleImage(app.tomatoSprout,3)
 
-    app.tomatoSmall = app.loadImage('tomatoSmall.png')
+    app.tomatoSmall = app.loadImage('design-components/tomatoSmall.png')
     app.tomatoSmall = app.scaleImage(app.tomatoSmall,3)
 
-    app.tomatoMed = app.loadImage('tomatoMed.png')
+    app.tomatoMed = app.loadImage('design-components/tomatoMed.png')
     app.tomatoMed = app.scaleImage(app.tomatoMed,3)
 
-    app.tomatoMat = app.loadImage('tomatoMat.png')
+    app.tomatoMat = app.loadImage('design-components/tomatoMat.png')
     app.tomatoMat = app.scaleImage(app.tomatoMat,3)
 
-    app.tomatoFlower = app.loadImage('tomatoFlower.png')
+    app.tomatoFlower = app.loadImage('design-components/tomatoFlower.png')
     app.tomatoFlower = app.scaleImage(app.tomatoFlower,3)
 
-    app.tomatoUnripe = app.loadImage('tomatoUnripe.png')
+    app.tomatoUnripe = app.loadImage('design-components/tomatoUnripe.png')
     app.tomatoUnripe = app.scaleImage(app.tomatoUnripe,3)
 
-    app.tomatoFruit = app.loadImage('tomatoFruit.png')
+    app.tomatoFruit = app.loadImage('design-components/tomatoFruit.png')
     app.tomatoFruit = app.scaleImage(app.tomatoFruit,3)
 
-    app.tomato1 = app.loadImage('tomato1.png')
+    app.tomato1 = app.loadImage('design-components/tomato1.png')
     app.tomato1 = app.scaleImage(app.tomato1,3)
 
-    app.tomato2 = app.loadImage('tomato2.png')
+    app.tomato2 = app.loadImage('design-components/tomato2.png')
     app.tomato2 = app.scaleImage(app.tomato2,3)
 
-    app.tomato3 = app.loadImage('tomato3.png')
+    app.tomato3 = app.loadImage('design-components/tomato3.png')
     app.tomato3 = app.scaleImage(app.tomato3,3)
 
-    app.tomato4 = app.loadImage('tomato4.png')
+    app.tomato4 = app.loadImage('design-components/tomato4.png')
     app.tomato4 = app.scaleImage(app.tomato4,3)
 
-    app.tomato5 = app.loadImage('tomato5.png')
+    app.tomato5 = app.loadImage('design-components/tomato5.png')
     app.tomato5 = app.scaleImage(app.tomato5,3)
 
 
     ## APPLES
-    app.apple = app.loadImage('apple.png')
+    app.apple = app.loadImage('design-components/apple.png')
     app.apple = app.scaleImage(app.apple,5)
 
-    app.appleSprout = app.loadImage('appleSprout.png')
+    app.appleSprout = app.loadImage('design-components/appleSprout.png')
     app.appleSprout = app.scaleImage(app.appleSprout,3)
 
-    app.appleSmall = app.loadImage('appleSmall.png')
+    app.appleSmall = app.loadImage('design-components/appleSmall.png')
     app.appleSmall = app.scaleImage(app.appleSmall,3)
 
-    app.appleMed = app.loadImage('appleMed.png')
+    app.appleMed = app.loadImage('design-components/appleMed.png')
     app.appleMed = app.scaleImage(app.appleMed,3)
 
-    app.appleMat = app.loadImage('appleMat.png')
+    app.appleMat = app.loadImage('design-components/appleMat.png')
     app.appleMat = app.scaleImage(app.appleMat,3)
 
-    app.appleFlower = app.loadImage('appleFlower.png')
+    app.appleFlower = app.loadImage('design-components/appleFlower.png')
     app.appleFlower = app.scaleImage(app.appleFlower,3)
 
-    app.appleUnripe = app.loadImage('appleUnripe.png')
+    app.appleUnripe = app.loadImage('design-components/appleUnripe.png')
     app.appleUnripe = app.scaleImage(app.appleUnripe,3)
 
-    app.appleFruit = app.loadImage('appleFruit.png')
+    app.appleFruit = app.loadImage('design-components/appleFruit.png')
     app.appleFruit = app.scaleImage(app.appleFruit,3)
 
-    app.apple1 = app.loadImage('apple1.png')
+    app.apple1 = app.loadImage('design-components/apple1.png')
     app.apple1 = app.scaleImage(app.apple1,3)
 
-    app.apple2 = app.loadImage('apple2.png')
+    app.apple2 = app.loadImage('design-components/apple2.png')
     app.apple2 = app.scaleImage(app.apple2,3)
 
-    app.apple3 = app.loadImage('apple3.png')
+    app.apple3 = app.loadImage('design-components/apple3.png')
     app.apple3 = app.scaleImage(app.apple3,3)
 
-    app.apple4 = app.loadImage('apple4.png')
+    app.apple4 = app.loadImage('design-components/apple4.png')
     app.apple4 = app.scaleImage(app.apple4,3)
 
-    app.apple5 = app.loadImage('apple5.png')
+    app.apple5 = app.loadImage('design-components/apple5.png')
     app.apple5 = app.scaleImage(app.apple5,3)
 
     ## LEMONS
-    app.lemon = app.loadImage('lemon.png')
+    app.lemon = app.loadImage('design-components/lemon.png')
     app.lemon = app.scaleImage(app.lemon,5)
 
-    app.lemonSprout = app.loadImage('lemonSprout.png')
+    app.lemonSprout = app.loadImage('design-components/lemonSprout.png')
     app.lemonSprout = app.scaleImage(app.lemonSprout,3)
 
-    app.lemonSmall = app.loadImage('lemonSmall.png')
+    app.lemonSmall = app.loadImage('design-components/lemonSmall.png')
     app.lemonSmall = app.scaleImage(app.lemonSmall,3)
 
-    app.lemonMed = app.loadImage('lemonMed.png')
+    app.lemonMed = app.loadImage('design-components/lemonMed.png')
     app.lemonMed = app.scaleImage(app.lemonMed,3)
 
-    app.lemonMat = app.loadImage('lemonMat.png')
+    app.lemonMat = app.loadImage('design-components/lemonMat.png')
     app.lemonMat = app.scaleImage(app.lemonMat,3)
 
-    app.lemonFlower = app.loadImage('lemonFlower.png')
+    app.lemonFlower = app.loadImage('design-components/lemonFlower.png')
     app.lemonFlower = app.scaleImage(app.lemonFlower,3)
 
-    app.lemonUnripe = app.loadImage('lemonUnripe.png')
+    app.lemonUnripe = app.loadImage('design-components/lemonUnripe.png')
     app.lemonUnripe = app.scaleImage(app.lemonUnripe,3)
 
-    app.lemonFruit = app.loadImage('lemonFruit.png')
+    app.lemonFruit = app.loadImage('design-components/lemonFruit.png')
     app.lemonFruit = app.scaleImage(app.lemonFruit,3)
 
-    app.lemon1 = app.loadImage('lemon1.png')
+    app.lemon1 = app.loadImage('design-components/lemon1.png')
     app.lemon1 = app.scaleImage(app.lemon1,3)
 
-    app.lemon2 = app.loadImage('lemon2.png')
+    app.lemon2 = app.loadImage('design-components/lemon2.png')
     app.lemon2 = app.scaleImage(app.lemon2,3)
 
-    app.lemon3 = app.loadImage('lemon3.png')
+    app.lemon3 = app.loadImage('design-components/lemon3.png')
     app.lemon3 = app.scaleImage(app.lemon3,3)
 
-    app.lemon4 = app.loadImage('lemon4.png')
+    app.lemon4 = app.loadImage('design-components/lemon4.png')
     app.lemon4 = app.scaleImage(app.lemon4,3)
 
-    app.lemon5 = app.loadImage('lemon5.png')
+    app.lemon5 = app.loadImage('design-components/lemon5.png')
     app.lemon5 = app.scaleImage(app.lemon5,3)
 
     ## PEACHES
-    app.peach = app.loadImage('peach.png')
+    app.peach = app.loadImage('design-components/peach.png')
     app.peach = app.scaleImage(app.peach,5)
 
-    app.peachSprout = app.loadImage('peachSprout.png')
+    app.peachSprout = app.loadImage('design-components/peachSprout.png')
     app.peachSprout = app.scaleImage(app.peachSprout,3)
 
-    app.peachSmall = app.loadImage('peachSmall.png')
+    app.peachSmall = app.loadImage('design-components/peachSmall.png')
     app.peachSmall = app.scaleImage(app.peachSmall,3)
 
-    app.peachMed = app.loadImage('peachMed.png')
+    app.peachMed = app.loadImage('design-components/peachMed.png')
     app.peachMed = app.scaleImage(app.peachMed,3)
 
-    app.peachMat = app.loadImage('peachMat.png')
+    app.peachMat = app.loadImage('design-components/peachMat.png')
     app.peachMat = app.scaleImage(app.peachMat,3)
 
-    app.peachFlower = app.loadImage('peachFlower.png')
+    app.peachFlower = app.loadImage('design-components/peachFlower.png')
     app.peachFlower = app.scaleImage(app.peachFlower,3)
 
-    app.peachUnripe = app.loadImage('peachUnripe.png')
+    app.peachUnripe = app.loadImage('design-components/peachUnripe.png')
     app.peachUnripe = app.scaleImage(app.peachUnripe,3)
 
-    app.peachFruit = app.loadImage('peachFruit.png')
+    app.peachFruit = app.loadImage('design-components/peachFruit.png')
     app.peachFruit = app.scaleImage(app.peachFruit,3)
 
-    app.peach1 = app.loadImage('peach1.png')
+    app.peach1 = app.loadImage('design-components/peach1.png')
     app.peach1 = app.scaleImage(app.peach1,3)
 
-    app.peach2 = app.loadImage('peach2.png')
+    app.peach2 = app.loadImage('design-components/peach2.png')
     app.peach2 = app.scaleImage(app.peach2,3)
 
-    app.peach3 = app.loadImage('peach3.png')
+    app.peach3 = app.loadImage('design-components/peach3.png')
     app.peach3 = app.scaleImage(app.peach3,3)
 
     app.invImages = [[app.apple,app.peach,app.lemon],
@@ -418,7 +418,7 @@ def appStarted(app):
     app.direction = 'Down'
  
     # sprite sheet
-    playerSpriteSheet = 'sprites.png'
+    playerSpriteSheet = 'design-components/sprites.png'
     app.spriteSheet = app.loadImage(playerSpriteSheet)
     app.spriteSheet = app.scaleImage(app.spriteSheet,2.5) 
     app.spriteHeight,app.spriteWidth = app.spriteSheet.size
