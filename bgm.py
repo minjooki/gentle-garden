@@ -10,7 +10,7 @@ class Sound(object):
     def isPlaying(self):
         return bool(pygame.mixer.music.get_busy())
 
-    def start(self, loops=1):
+    def start(self, loops=-1):
         self.loops = loops
         pygame.mixer.music.play(loops=loops)
     
