@@ -465,7 +465,7 @@ def timerFired(app):
     app.timeElapsed += 10  
         
     if (app.mode!='exitMode' and app.mode!='startMode' and app.mode!='nightMode'
-         and app.timeElapsed >= 600 and app.isHome==False) or (app.isHome):
+         and app.timeElapsed >= 1200 and app.isHome==False) or (app.isHome):
          # check of everything (growth, level) at night
         app.goHome = False
         checkForGrowth(app)
@@ -653,6 +653,9 @@ def mousePressed(app,event):
             app.unplantWidth,app.unplantHeight):
             app.removingPlants = True
             app.openPlanting = False
+            app.isPlanting = False
+            app.isWatering = False
+            app.isHarvest = False
     
     if app.isPlanting and app.openPlanting==False:
         # planting seed 
@@ -678,15 +681,12 @@ def mousePressed(app,event):
                 updateSeeds(app)
 
     if app.openPlanting==False and app.removingPlants:
-        app.isWatering = False
-        app.isPlanting = False
-        app.isHarvest = False
         # remove plants
         (row,col) = getBoardRowCol(app,app.cx,app.cy)
 
-        if app.board[row][col] in (50,51,52,53,54,55,56):
+        if app.board[row][col] in (50,51,52,53,54,55,56,'apple','lemon','peach'):
             removeTree(app,row,col)
-        elif app.board[row][col] in (60,61,62,63,64,65,66):
+        elif app.board[row][col] in (60,61,62,63,64,65,66,'tomato','strawb','blackb'):
             removePlant(app,row,col)
         elif clickedOn(app.cx,app.cy,app.stopRemoveX0,app.stopRemoveY0,
             app.stopRemoveWidth,app.stopRemoveHeight):
@@ -696,13 +696,13 @@ def mousePressed(app,event):
     if (app.isPlanting==False and 
         clickedOn(app.cx,app.cy,app.waterStartX0,app.waterStartY0,
             app.waterStartWidth,app.waterStartHeight)):
-        app.removingPlants = False
         app.isWatering = True
         app.openPlanting = False
         app.currSeed = None
         app.isPlanting = False
         app.openInventory = None
         app.isHarvest = False
+        app.removingPlants = False
     
     elif clickedOn(app.cx,app.cy,app.waterStopX0,app.waterStopY0,
         app.waterStopWidth,app.waterStopHeight) and app.isWatering:
@@ -1404,6 +1404,8 @@ def getImage(app,imagePair):
             return app.lemon3
         elif stage==4:
             return app.lemon4
+        elif stage==5:
+            return app.lemon5
 
     elif plantType=='strawb':
         if stage=='sprout':
